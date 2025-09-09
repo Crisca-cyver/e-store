@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>store - Tienda Online</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <a href="index.html" class="logo">
+                <img src="images/logo.svg" alt="store Logo" class="logo-img">
+                store
+            </a>
+        </div>
+        <button id="menu-toggle" class="menu-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="#" class="active">All</a></li>
+            </ul>
+        </nav>
+        
+
+    </header>
+
+    <aside class="sidebar">
+        <div class="collections">
+            <h3>Collections</h3>
+            <ul>
+                <li><a href="#">All</a></li>
+                <li><a href="#">Bags</a></li>
+                <li><a href="#">Drinkware</a></li>
+                <li><a href="#">Electronics</a></li>
+                <li><a href="#">Footwear</a></li>
+                <li><a href="#">Headwear</a></li>
+                <li><a href="#">Hoodies</a></li>
+                <li><a href="#">Jackets</a></li>
+                <li><a href="#">Kids</a></li>
+                <li><a href="#">Pets</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main>
+
+        
+        <div class="sort-options">
+            <div class="results-info">
+                <span id="results-count">Cargando productos...</span>
+            </div>
+            <div class="sort-by">
+                <span>Sort by</span>
+                <ul>
+                    <li><a href="#" class="active">Relevance</a></li>
+                    <li><a href="#">Trending</a></li>
+                    <li><a href="#">Latest arrivals</a></li>
+                    <li><a href="#">Price: Low to high</a></li>
+                    <li><a href="#">Price: High to low</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="products-grid" id="products-container">
+            <!-- Products will be loaded dynamically from JSON -->
+            <div class="product-card product-placeholder">
+                <div class="product-image"></div>
+                <div class="product-info">
+                    <div class="product-name">Cargando productos...</div>
+                    <div class="product-price"></div>
+                </div>
+            </div>
+            <div class="product-card product-placeholder">
+                <div class="product-image"></div>
+                <div class="product-info">
+                    <div class="product-name"></div>
+                    <div class="product-price"></div>
+                </div>
+            </div>
+            <div class="product-card product-placeholder">
+                <div class="product-image"></div>
+                <div class="product-info">
+                    <div class="product-name"></div>
+                    <div class="product-price"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- La sección del carrusel ha sido eliminada -->
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <i class="fas fa-triangle"></i> store
+            </div>
+            <div class="footer-links">
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; 2023 store. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="products.js"></script>
+    <script src="google-sheets.js"></script>
+    <script src="script.js"></script>
+    
+    <!-- Modal para cargar productos desde Google Sheets -->
+    <div id="google-sheets-modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Cargar Productos desde Google Sheets</h2>
+            <form id="google-sheets-form">
+                <div class="form-group">
+                    <label for="data-source">Fuente de datos:</label>
+                    <select id="data-source" class="form-select">
+                        <option value="sheet-id">ID de Google Sheets</option>
+                        <option value="csv-url">URL CSV directa</option>
+                    </select>
+                </div>
+                
+                <div id="sheet-id-group" class="form-group">
+                    <label for="sheet-id">ID de la Hoja de Google:</label>
+                    <input type="text" id="sheet-id" placeholder="Ej: 1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms">
+                </div>
+                <div id="sheet-gid-group" class="form-group">
+                    <label for="sheet-gid">GID de la Hoja (opcional):</label>
+                    <input type="text" id="sheet-gid" placeholder="Ej: 0">
+                </div>
+                
+                <div id="csv-url-group" class="form-group" style="display: none;">
+                    <label for="csv-url">URL CSV directa:</label>
+                    <input type="text" id="csv-url" placeholder="Ej: https://docs.google.com/spreadsheets/.../pub?output=csv">
+                </div>
+                
+                <button type="submit" class="btn">Cargar Productos</button>
+            </form>
+            <div class="instructions">
+                <h3>Instrucciones:</h3>
+                <ol>
+                    <li>Crea una hoja de cálculo en Google Sheets</li>
+                    <li>Asegúrate de que la hoja sea pública (Archivo > Compartir > Cualquier persona con el enlace)</li>
+                    <li>La primera fila debe contener los encabezados: id, name, price, currency, category, image</li>
+                    <li>Copia el ID de la hoja desde la URL (la parte entre /d/ y /edit)</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Agregar botón para abrir el modal de Google Sheets
+        document.addEventListener('DOMContentLoaded', function() {
+            // Crear botón para abrir modal
+            const header = document.querySelector('header');
+            const sheetsButton = document.createElement('button');
+            sheetsButton.id = 'google-sheets-button';
+            sheetsButton.className = 'sheets-button';
+            sheetsButton.innerHTML = '<i class="fas fa-table"></i> Cargar desde Google Sheets';
+            header.appendChild(sheetsButton);
+            
+            // Configurar modal
+            const modal = document.getElementById('google-sheets-modal');
+            const closeBtn = modal.querySelector('.close');
+            
+            sheetsButton.addEventListener('click', function() {
+                modal.style.display = 'block';
+            });
+            
+            closeBtn.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+            
+            // Manejar cambio de fuente de datos
+            const dataSourceSelect = document.getElementById('data-source');
+            const sheetIdGroup = document.getElementById('sheet-id-group');
+            const sheetGidGroup = document.getElementById('sheet-gid-group');
+            const csvUrlGroup = document.getElementById('csv-url-group');
+            
+            dataSourceSelect.addEventListener('change', function() {
+                if (this.value === 'sheet-id') {
+                    sheetIdGroup.style.display = 'block';
+                    sheetGidGroup.style.display = 'block';
+                    csvUrlGroup.style.display = 'none';
+                } else {
+                    sheetIdGroup.style.display = 'none';
+                    sheetGidGroup.style.display = 'none';
+                    csvUrlGroup.style.display = 'block';
+                }
+            });
+            
+            // Manejar envío del formulario
+            const form = document.getElementById('google-sheets-form');
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const dataSource = document.getElementById('data-source').value;
+                let url = '?';
+                
+                if (dataSource === 'sheet-id') {
+                    const sheetId = document.getElementById('sheet-id').value;
+                    const gid = document.getElementById('sheet-gid').value || '0';
+                    
+                    if (!sheetId) {
+                        alert('Por favor ingresa el ID de la hoja de Google');
+                        return;
+                    }
+                    
+                    url = `?sheetId=${encodeURIComponent(sheetId)}&gid=${encodeURIComponent(gid)}`;
+                } else {
+                    const csvUrl = document.getElementById('csv-url').value;
+                    
+                    if (!csvUrl) {
+                        alert('Por favor ingresa la URL CSV directa');
+                        return;
+                    }
+                    
+                    url = `?csvUrl=${encodeURIComponent(csvUrl)}`;
+                }
+                
+                // Redirigir a la misma página con los parámetros correspondientes
+                window.location.href = url;
+            });
+        });
+    </script>
+</body>
+</html>
