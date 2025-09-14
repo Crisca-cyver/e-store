@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>store - Tienda Online</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="error-styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <a href="index.html" class="logo">
+                <img src="images/logo.svg" alt="store Logo" class="logo-img">
+                store
+            </a>
+        </div>
+        <button id="menu-toggle" class="menu-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </button>
+        <nav>
+            <ul class="nav-links">
+                <li><a href="#" class="active">All</a></li>
+            </ul>
+        </nav>
+        
+
+    </header>
+
+    <aside class="sidebar">
+        <div class="collections">
+            <h3>Collections</h3>
+            <ul>
+                <li><a href="#">All</a></li>
+                <li><a href="#">Bags</a></li>
+                <li><a href="#">Drinkware</a></li>
+                <li><a href="#">Electronics</a></li>
+                <li><a href="#">Footwear</a></li>
+                <li><a href="#">Headwear</a></li>
+                <li><a href="#">Hoodies</a></li>
+                <li><a href="#">Jackets</a></li>
+                <li><a href="#">Kids</a></li>
+                <li><a href="#">Pets</a></li>
+            </ul>
+        </div>
+    </aside>
+
+    <main>
+
+        
+        <div class="sort-options">
+            <div class="results-info">
+                <span id="results-count">Cargando productos...</span>
+            </div>
+            <div class="sort-by">
+                <span>Sort by</span>
+                <ul>
+                    <li><a href="#" class="active">Relevance</a></li>
+                    <li><a href="#">Trending</a></li>
+                    <li><a href="#">Latest arrivals</a></li>
+                    <li><a href="#">Price: Low to high</a></li>
+                    <li><a href="#">Price: High to low</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="products-grid" id="products-container">
+            <!-- Products will be loaded dynamically from JSON -->
+            <div class="product-card product-placeholder">
+                <div class="product-image"></div>
+                <div class="product-info">
+                    <div class="product-name">Cargando productos...</div>
+                    <div class="product-price"></div>
+                </div>
+            </div>
+            <div class="product-card product-placeholder">
+                <div class="product-image"></div>
+                <div class="product-info">
+                    <div class="product-name"></div>
+                    <div class="product-price"></div>
+                </div>
+            </div>
+            <div class="product-card product-placeholder">
+                <div class="product-image"></div>
+                <div class="product-info">
+                    <div class="product-name"></div>
+                    <div class="product-price"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- La sección del carrusel ha sido eliminada -->
+    </main>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo">
+                <i class="fas fa-triangle"></i> store
+            </div>
+            <div class="footer-links">
+                <ul>
+                    <li><a href="#">About Us</a></li>
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Privacy Policy</a></li>
+                    <li><a href="#">Terms of Service</a></li>
+                </ul>
+            </div>
+            <div class="social-links">
+                <a href="#"><i class="fab fa-facebook"></i></a>
+                <a href="#"><i class="fab fa-twitter"></i></a>
+                <a href="#"><i class="fab fa-instagram"></i></a>
+            </div>
+        </div>
+        <div class="copyright">
+            <p>&copy; <span id="current-year"></span> store. All rights reserved.</p>
+        </div>
+    </footer>
+    
+    <!-- WhatsApp Floating Button -->
+    <a href="https://wa.me/5493518027879" class="whatsapp-float" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
+
+    <script src="products.js"></script>
+    <script src="fix-google-sheets.js"></script>
+    <script src="script.js"></script>
+    
+    <!-- El modal para cargar productos desde Google Sheets ha sido eliminado -->
+
+    <!-- El script para el botón de Google Sheets ha sido eliminado -->
+</body>
+</html>

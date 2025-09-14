@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Productos JSON</title>
+    <style>
+        :root {
+            --bg-color: #121212;
+            --container-bg: #1e1e1e;
+            --text-color: #e0e0e0;
+            --heading-color: #ffffff;
+            --border-color: #333;
+            --card-bg: #252525;
+            --card-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            --accent-color: #d40e0e;
+            --pre-bg: #2d2d2d;
+            --error-color: #cf6679;
+            --success-color: #03dac6;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: var(--container-bg);
+            border-radius: 8px;
+            box-shadow: var(--card-shadow);
+        }
+        h1, h2 {
+            color: var(--heading-color);
+            margin-top: 20px;
+        }
+        h1 {
+            margin-top: 0;
+        }
+        pre {
+            background-color: var(--pre-bg);
+            padding: 15px;
+            border-radius: 5px;
+            overflow: auto;
+            max-height: 600px;
+            font-family: monospace;
+            color: var(--text-color);
+        }
+        .error {
+            color: var(--error-color);
+            font-weight: bold;
+        }
+        .success {
+            color: var(--success-color);
+            font-weight: bold;
+        }
+        .loading {
+            color: #999;
+            font-style: italic;
+        }
+        #products-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .product-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            background-color: var(--card-bg);
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+            border-color: var(--accent-color);
+        }
+        .product-images {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            overflow: hidden;
+        }
+        .product-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .product-image.active {
+            opacity: 1;
+            z-index: 1;
+        }
+        .carousel-controls {
+            position: absolute;
+            bottom: 10px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: center;
+            z-index: 2;
+        }
+        .carousel-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: rgba(255, 255, 255, 0.3);
+            margin: 0 5px;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s ease;
+        }
+        .carousel-dot.active {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: scale(1.2);
+        }
+        .product-info {
+            padding: 15px;
+        }
+        .product-name {
+            font-weight: bold;
+            font-size: 18px;
+            margin: 0 0 10px 0;
+            color: var(--heading-color);
+        }
+        .product-price {
+            font-size: 16px;
+            color: var(--accent-color);
+            margin: 0 0 10px 0;
+        }
+        .product-description {
+            font-size: 14px;
+            color: var(--text-color);
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .product-category {
+            display: inline-block;
+            background-color: #333;
+            color: var(--text-color);
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 10px;
+            border: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>e-shop tienda online</h1>
+        <!--<div id="status" class="loading">Cargando productos desde Google Sheets...</div>-->
+        <div id="products-container"></div>
+        <!--<h2>Datos JSON</h2>
+        <pre id="json-output"></pre>-->
+    </div>
+
+    <script src="fix-google-sheets.js"></script>
+    <script>
+        // Función para mostrar mensajes en la interfaz
+        function updateStatus(message, isError = false) {
+            const statusElement = document.getElementById('status');
+            statusElement.textContent = message;
+            statusElement.className = isError ? 'error' : 'success';
+        }
+
+        // Función para mostrar JSON formateado
+        function displayJson(data) {
+            const jsonOutput = document.getElementById('json-output');
+            jsonOutput.textContent = JSON.stringify(data, null, 2);
+        }
+        
+        // Función para mostrar productos en la interfaz
+        function displayProducts(products) {
+            const container = document.getElementById('products-container');
+            container.innerHTML = '';
+            
+            console.log('Mostrando productos en la interfaz:', products.length);
+            
+            products.forEach((product, index) => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                
+                // Crear contenedor para las imágenes
+                const imageContainer = document.createElement('div');
+                imageContainer.className = 'product-images';
+                imageContainer.style.display = 'flex';
+                imageContainer.style.position = 'relative';
+                
+                // Crear elemento de imagen principal con manejo de errores
+                const img = document.createElement('img');
+                img.className = 'product-image';
+                img.style.flex = '1';
+                
+                // Asegurarse de que cada producto tenga una imagen única
+                // Si la URL de la imagen contiene el nombre del producto, usarla directamente
+                // De lo contrario, intentar usar una imagen local basada en el nombre del producto
+                let imgSrc = product.image;
+                if (imgSrc === 'images/placeholder.jpg') {
+                    // Intentar usar una imagen local basada en el nombre del producto
+                    const productName = product.name.toLowerCase().replace(/\s+/g, '-');
+                    const localImgSrc = `images/${productName}.jpg`;
+                    console.log(`Producto ${index}: Intentando usar imagen local:`, localImgSrc);
+                    imgSrc = localImgSrc;
+                }
+                
+                img.src = imgSrc;
+                img.alt = product.name;
+                
+                // Añadir información de depuración
+                console.log(`Producto ${index}: Cargando imagen principal:`, imgSrc);
+                
+                // Contador para intentar diferentes imágenes si la primera falla
+                let attemptCount = 0;
+                
+                img.onerror = function() {
+                    attemptCount++;
+                    console.warn(`Producto ${index}: Error al cargar imagen principal (intento ${attemptCount}):`, this.src);
+                    
+                    if (attemptCount === 1 && this.src !== 'images/placeholder.jpg') {
+                        // Primer intento fallido, probar con número de índice
+                        this.src = `images/${index + 1}.jpg`;
+                        console.log(`Producto ${index}: Intentando con imagen numérica:`, this.src);
+                    } else {
+                        // Usar imagen de placeholder como último recurso
+                        this.src = 'images/placeholder.jpg';
+                    }
+                };
+                
+                img.onload = function() {
+                    console.log(`Producto ${index}: Imagen principal cargada correctamente:`, this.src);
+                };
+                
+                // Crear elemento para la segunda imagen
+                const img2 = document.createElement('img');
+                img2.className = 'product-image';
+                img2.style.flex = '1';
+                
+                // Procesar la segunda imagen
+                let img2Src = product.image2 || 'images/placeholder.jpg';
+                if (img2Src === 'images/placeholder.jpg') {
+                    // Intentar usar una imagen local basada en el nombre del producto
+                    const productName = product.name.toLowerCase().replace(/\s+/g, '-');
+                    const localImgSrc = `images/${productName}a.jpg`; // Añadir 'a' al nombre
+                    console.log(`Producto ${index}: Intentando usar imagen local para segunda imagen:`, localImgSrc);
+                    img2Src = localImgSrc;
+                }
+                
+                img2.src = img2Src;
+                img2.alt = `${product.name} - Vista alternativa`;
+                
+                // Añadir información de depuración
+                console.log(`Producto ${index}: Cargando segunda imagen:`, img2Src);
+                
+                // Contador para intentar diferentes imágenes si la segunda falla
+                let attemptCount2 = 0;
+                
+                img2.onerror = function() {
+                    attemptCount2++;
+                    console.warn(`Producto ${index}: Error al cargar segunda imagen (intento ${attemptCount2}):`, this.src);
+                    
+                    if (attemptCount2 === 1 && this.src !== 'images/placeholder.jpg') {
+                        // Primer intento fallido, probar con número de índice
+                        this.src = `images/${index + 1}a.jpg`; // Añadir 'a' al nombre
+                        console.log(`Producto ${index}: Intentando con imagen numérica para segunda imagen:`, this.src);
+                    } else if (attemptCount2 === 2 && this.src !== 'images/placeholder.jpg') {
+                        // Segundo intento fallido, usar la misma imagen que la principal
+                        this.src = img.src;
+                        console.log(`Producto ${index}: Usando imagen principal como segunda imagen:`, this.src);
+                    } else {
+                        // Usar imagen de placeholder como último recurso
+                        this.src = 'images/placeholder.jpg';
+                    }
+                };
+                
+                img2.onload = function() {
+                    console.log(`Producto ${index}: Segunda imagen cargada correctamente:`, this.src);
+                };
+                
+                // Añadir imágenes al contenedor y configurar el carrusel
+                img.classList.add('active'); // Primera imagen activa por defecto
+                imageContainer.appendChild(img);
+                imageContainer.appendChild(img2);
+                
+                // Crear controles del carrusel
+                const controls = document.createElement('div');
+                controls.className = 'carousel-controls';
+                
+                // Crear puntos indicadores
+                const dot1 = document.createElement('div');
+                dot1.className = 'carousel-dot active';
+                dot1.dataset.index = '0';
+                
+                const dot2 = document.createElement('div');
+                dot2.className = 'carousel-dot';
+                dot2.dataset.index = '1';
+                
+                // Añadir eventos a los puntos
+                dot1.addEventListener('click', function() {
+                    img.classList.add('active');
+                    img2.classList.remove('active');
+                    dot1.classList.add('active');
+                    dot2.classList.remove('active');
+                });
+                
+                dot2.addEventListener('click', function() {
+                    img2.classList.add('active');
+                    img.classList.remove('active');
+                    dot2.classList.add('active');
+                    dot1.classList.remove('active');
+                });
+                
+                controls.appendChild(dot1);
+                controls.appendChild(dot2);
+                imageContainer.appendChild(controls);
+                
+                // Función para cambiar entre imágenes
+                const toggleImages = () => {
+                    if (img.classList.contains('active')) {
+                        img.classList.remove('active');
+                        img2.classList.add('active');
+                        dot1.classList.remove('active');
+                        dot2.classList.add('active');
+                    } else {
+                        img2.classList.remove('active');
+                        img.classList.add('active');
+                        dot2.classList.remove('active');
+                        dot1.classList.add('active');
+                    }
+                };
+                
+                // Añadir evento para cambiar imagen al hacer clic en la imagen
+                imageContainer.addEventListener('click', function(e) {
+                    // Solo cambiar si se hace clic en la imagen, no en los controles
+                    if (e.target === img || e.target === img2) {
+                        toggleImages();
+                        
+                        // Reiniciar el temporizador al hacer clic
+                        if (card.autoplayInterval) {
+                            clearInterval(card.autoplayInterval);
+                            card.autoplayInterval = setInterval(toggleImages, 3000);
+                        }
+                    }
+                });
+                
+                // Configurar autoplay para el carrusel
+                card.autoplayInterval = setInterval(toggleImages, 3000);
+                
+                // Detener autoplay al pasar el ratón por encima
+                card.addEventListener('mouseenter', function() {
+                    if (card.autoplayInterval) {
+                        clearInterval(card.autoplayInterval);
+                        card.autoplayInterval = null;
+                    }
+                });
+                
+                // Reanudar autoplay al quitar el ratón
+                card.addEventListener('mouseleave', function() {
+                    if (!card.autoplayInterval) {
+                        card.autoplayInterval = setInterval(toggleImages, 3000);
+                    }
+                });
+                
+                // Crear contenedor de información
+                const info = document.createElement('div');
+                info.className = 'product-info';
+                
+                // Añadir nombre del producto
+                const name = document.createElement('h3');
+                name.className = 'product-name';
+                name.textContent = product.name;
+                
+                // Añadir precio del producto
+                const price = document.createElement('p');
+                price.className = 'product-price';
+                price.textContent = `${product.currency} ${product.price.toFixed(2)}`;
+                
+                // Añadir descripción del producto
+                const description = document.createElement('p');
+                description.className = 'product-description';
+                description.textContent = product.description;
+                
+                // Añadir categoría del producto
+                const category = document.createElement('span');
+                category.className = 'product-category';
+                category.textContent = product.category;
+                
+                // Añadir elementos al DOM
+                info.appendChild(name);
+                info.appendChild(price);
+                info.appendChild(description);
+                info.appendChild(category);
+                
+                card.appendChild(imageContainer);
+                card.appendChild(info);
+                
+                container.appendChild(card);
+            });
+        }
+
+        // Función para cargar productos desde Google Sheets
+        async function loadProducts() {
+            try {
+                // Usar la hoja de Google Sheets específica proporcionada
+                const sheetId = '1V517_5Mb2J3yJWYNSJz6jQrJf0alLOocBUcghgg1b7s';
+                const gid = '0';
+                
+                // Verificar que las utilidades estén disponibles
+                if (!window.googleSheetsUtils || typeof window.googleSheetsUtils.convertCsvToProducts !== 'function') {
+                    throw new Error('Las utilidades de conversión CSV no están disponibles');
+                }
+                
+                // Construir URL de exportación
+                let url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+                if (gid !== '0') {
+                    url += `&gid=${gid}`;
+                }
+                
+                console.log('URL de Google Sheets construida:', url);
+                
+                // Usar proxy CORS para evitar problemas de CORS
+                const corsProxyUrl = 'https://corsproxy.io/?';
+                const proxiedUrl = corsProxyUrl + encodeURIComponent(url);
+                console.log('URL con proxy CORS:', proxiedUrl);
+                
+                // Realizar solicitud a través del proxy
+                const response = await fetch(proxiedUrl);
+                
+                if (!response.ok) {
+                    throw new Error(`Error al cargar datos de Google Sheets: ${response.status} ${response.statusText}`);
+                }
+                
+                const csvText = await response.text();
+                console.log('CSV cargado, longitud:', csvText.length);
+                
+                if (!csvText || csvText.trim() === '') {
+                    throw new Error('La hoja de cálculo está vacía');
+                }
+                
+                // Convertir CSV a productos
+                const products = window.googleSheetsUtils.convertCsvToProducts(csvText);
+                console.log('Productos cargados:', products.length);
+                
+                if (products.length === 0) {
+                    throw new Error('No se encontraron productos en la hoja de cálculo');
+                }
+                
+                // Mostrar productos en la interfaz
+                //updateStatus(`Se cargaron ${products.length} productos correctamente`);
+                displayProducts(products);
+                displayJson(products);
+                
+            } catch (error) {
+                console.error('Error al cargar productos:', error);
+                updateStatus(`Error: ${error.message}`, true);
+                displayJson({error: error.message});
+            }
+        }
+        
+        // Cargar productos cuando la página esté lista
+        document.addEventListener('DOMContentLoaded', loadProducts);
+        
+        // Limpiar todos los intervalos cuando se cierra la página
+        window.addEventListener('beforeunload', function() {
+            // Buscar todos los elementos con intervalos y limpiarlos
+            document.querySelectorAll('.product-card').forEach(card => {
+                if (card.autoplayInterval) {
+                    clearInterval(card.autoplayInterval);
+                    card.autoplayInterval = null;
+                }
+            });
+        });
+    </script>
+</body>
+</html>
