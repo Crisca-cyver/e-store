@@ -1,5 +1,6 @@
 // Variables globales
-let products = [];
+// Usamos window.products para evitar conflictos con otras declaraciones
+window.products = [];
 let filteredProducts = [];
 let currentCategory = 'All';
 let currentSort = 'Relevance';
@@ -323,12 +324,37 @@ async function loadProducts() {
 // Inicializar productos
 async function initializeProducts() {
     try {
-        products = await loadProducts();
+        // Verificar si ya tenemos productos en sessionStorage
+        const cachedProducts = sessionStorage.getItem('cachedProducts');
+        if (cachedProducts) {
+            console.log('Usando productos en caché');
+            window.products = JSON.parse(cachedProducts);
+        } else {
+            // Si no hay productos en caché, cargar desde Google Sheets
+            try {
+                // Intentar cargar desde Google Sheets
+                window.products = await loadProducts();
+            } catch (error) {
+                console.error('Error al cargar desde Google Sheets:', error);
+                // Intentar cargar desde JSON local como fallback
+                try {
+                    const response = await fetch('products.json');
+                    const data = await response.json();
+                    window.products = data.products || [];
+                    
+                    // Guardar en sessionStorage para futuras cargas
+                    sessionStorage.setItem('cachedProducts', JSON.stringify(window.products));
+                } catch (jsonError) {
+                    console.error('Error al cargar products.json:', jsonError);
+                    window.products = [];
+                }
+            }
+        }
         
-        if (!products || products.length === 0) {
+        if (!window.products || window.products.length === 0) {
             console.warn('No se cargaron productos');
             document.getElementById('products-container').innerHTML = 
-                '<div class="error-message">No se encontraron productos. Verifica la URL de la hoja de cálculo.</div>';
+                '<div class="error-message">No se encontraron productos. Verifica la hoja de Google Sheets.</div>';
             return;
         }
         
@@ -351,6 +377,8 @@ async function initializeProducts() {
         }
     } catch (error) {
         console.error('Error al cargar los productos:', error);
+        document.getElementById('products-container').innerHTML = 
+            `<div class="error-message">Error al cargar productos: ${error.message}</div>`;
     }
 }
 
@@ -794,16 +822,20 @@ function updateCategoryFilters() {
 }
 
 // Inicializar la aplicación cuando el DOM esté cargado
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     // Ocultar la sección del carrusel
     const carouselSection = document.querySelector('.carousel-container');
     if (carouselSection) {
         carouselSection.style.display = 'none';
     }
     
-    initializeProducts();
-    setupEventListeners();
-    updateCurrentYear();
+    try {
+        await initializeProducts();
+        setupEventListeners();
+        updateCurrentYear();
+    } catch (error) {
+        console.error('Error al inicializar la aplicación:', error);
+    }
     
     // La funcionalidad de importación de WhatsApp ha sido eliminada
 });

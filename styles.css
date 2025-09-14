@@ -465,6 +465,17 @@ main {
     text-overflow: ellipsis;
 }
 
+.product-description {
+    font-size: 0.85rem;
+    color: #cccccc;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
 .product-price {
     color: #4a90e2;
     font-weight: bold;
