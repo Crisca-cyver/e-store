@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
-  <rect width="300" height="300" fill="#e8f8e8"/>
-  <text x="150" y="150" font-family="Arial" font-size="24" text-anchor="middle" dominant-baseline="middle" fill="#333">Producto 4</text>
-  <rect x="50" y="180" width="200" height="40" rx="5" fill="#c8f0c8"/>
-  <text x="150" y="205" font-family="Arial" font-size="16" text-anchor="middle" dominant-baseline="middle" fill="#555">Imagen de ejemplo</text>
-</svg>
