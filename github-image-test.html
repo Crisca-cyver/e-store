@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Imágenes GitHub</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .image-container {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .image-container img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin-bottom: 10px;
+        }
+        h2 {
+            color: #333;
+        }
+        .url {
+            font-family: monospace;
+            background-color: #f5f5f5;
+            padding: 5px;
+            border-radius: 3px;
+            word-break: break-all;
+        }
+    </style>
+</head>
+<body>
+    <h1>Prueba de Imágenes desde GitHub</h1>
+    
+    <div class="image-container">
+        <h2>Imagen 1 - Local</h2>
+        <div class="url">images/1.jpg</div>
+        <img src="images/1.jpg" alt="Imagen 1">
+    </div>
+    
+    <div class="image-container">
+        <h2>Imagen 2 - Local</h2>
+        <div class="url">images/2.jpg</div>
+        <img src="images/2.jpg" alt="Imagen 2">
+    </div>
+    
+    <div class="image-container">
+        <h2>Imagen con fixImageUrl - Solo nombre de archivo</h2>
+        <div id="url-fixed-1" class="url">Cargando...</div>
+        <img id="img-fixed-1" alt="Imagen con fixImageUrl">
+    </div>
+    
+    <div class="image-container">
+        <h2>Imagen con fixImageUrl - Ruta relativa</h2>
+        <div id="url-fixed-2" class="url">Cargando...</div>
+        <img id="img-fixed-2" alt="Imagen con fixImageUrl">
+    </div>
+    
+    <script src="fix-google-sheets.js"></script>
+    <script>
+        // Definir una función fixImageUrl directamente para pruebas
+        function fixImageUrl(url) {
+            if (!url) return 'images/placeholder.jpg';
+            
+            // Si la URL ya es una URL completa, devolverla tal cual
+            if (url.startsWith('http')) {
+                return url;
+            }
+            
+            // Si es una ruta relativa o solo el nombre del archivo, asegurarse de que tenga el prefijo 'images/'
+            if (!url.startsWith('images/')) {
+                // Extraer solo el nombre del archivo si contiene una ruta
+                const fileName = url.includes('/') ? url.split('/').pop() : url;
+                return `images/${fileName}`;
+            }
+            
+            return url;
+        }
+        
+        // Esperar a que se cargue la página
+        window.onload = function() {
+            // Probar con solo nombre de archivo
+            const fileName = "1.jpg";
+            const fixedUrl1 = fixImageUrl(fileName);
+            document.getElementById('url-fixed-1').textContent = fixedUrl1;
+            document.getElementById('img-fixed-1').src = fixedUrl1;
+            
+            // Probar con ruta relativa
+            const relativePath = "images/2.jpg";
+            const fixedUrl2 = fixImageUrl(relativePath);
+            document.getElementById('url-fixed-2').textContent = fixedUrl2;
+            document.getElementById('img-fixed-2').src = fixedUrl2;
+        };
+    </script>
+</body>
+</html>

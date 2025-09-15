@@ -1,0 +1,21 @@
+.loading,
+.error-message {
+    text-align: center;
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 600px;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.loading {
+    background-color: #f0f8ff;
+    border: 1px solid #b8daff;
+    color: #004085;
+}
+
+.error-message {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    color: #721c24;
+}

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de JSON de Google Sheets</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+        }
+        pre {
+            background-color: #f5f5f5;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .loading {
+            color: #666;
+            font-style: italic;
+        }
+        .error {
+            color: #f44336;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>Visualizador de JSON de Google Sheets</h1>
+    <button id="loadBtn">Cargar datos de Google Sheets</button>
+    <div id="status"></div>
+    <h2>Datos CSV originales:</h2>
+    <pre id="csvData">Haga clic en "Cargar datos" para ver el CSV original</pre>
+    <h2>Datos JSON procesados:</h2>
+    <pre id="jsonData">Haga clic en "Cargar datos" para ver el JSON procesado</pre>
+
+    <script src="fix-google-sheets.js"></script>
+    <script>
+        // ID de la hoja de Google Sheets
+        const sheetId = '1V517_5Mb2J3yJWYNSJz6jQrJf0alLOocBUcghgg1b7s';
+        const gid = '0';
+
+        document.getElementById('loadBtn').addEventListener('click', loadSheetData);
+
+        async function loadSheetData() {
+            try {
+                // Mostrar mensaje de carga
+                document.getElementById('status').innerHTML = '<p class="loading">Cargando datos...</p>';
+                document.getElementById('csvData').textContent = 'Cargando...';
+                document.getElementById('jsonData').textContent = 'Cargando...';
+                
+                // Construir URL de exportación
+                let url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
+                if (gid !== '0') {
+                    url += `&gid=${gid}`;
+                }
+                
+                // Cargar CSV
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+                
+                const csvText = await response.text();
+                
+                // Mostrar CSV original
+                document.getElementById('csvData').textContent = csvText;
+                
+                // Convertir CSV a productos usando la función de fix-google-sheets.js
+                const products = window.googleSheetsUtils.convertCsvToProducts(csvText);
+                
+                // Mostrar JSON procesado
+                document.getElementById('jsonData').textContent = JSON.stringify(products, null, 2);
+                
+                // Actualizar estado
+                document.getElementById('status').innerHTML = 
+                    `<p>Datos cargados correctamente. Se encontraron ${products.length} productos.</p>`;
+                
+            } catch (error) {
+                console.error('Error al cargar datos:', error);
+                document.getElementById('status').innerHTML = 
+                    `<p class="error">Error al cargar datos: ${error.message}</p>`;
+                document.getElementById('csvData').textContent = 'Error al cargar datos';
+                document.getElementById('jsonData').textContent = 'Error al cargar datos';
+            }
+        }
+    </script>
+</body>
+</html>
