@@ -8,75 +8,133 @@
  */
 
 class EStore {
-    constructor(config) {
+    constructor(config = {}) {
+        // Verificar que la configuración global esté disponible
+        if (!window.EStoreConfig) {
+            throw new Error('EStoreConfig no está disponible. Asegúrate de cargar config.js antes de main.js');
+        }
+
+        // Fusionar configuración proporcionada con valores por defecto
         this.config = {
-            sheetId: config.sheetId || "1V517_5Mb2J3yJWYNSJz6jQrJf0alLOocBUcghgg1b7s",
-            gid: config.gid || "0",
-            containerId: config.containerId || "products-container",
-            counterElementId: config.counterElementId || "results-count",
+            sheetId: config.sheetId || window.EStoreConfig.googleSheets.defaultSheetId,
+            gid: config.gid || window.EStoreConfig.googleSheets.defaultGid,
+            containerId: config.containerId || window.EStoreConfig.selectors.productsContainer,
+            counterElementId: config.counterElementId || window.EStoreConfig.selectors.resultsCounter,
+            searchInputId: config.searchInputId || window.EStoreConfig.selectors.searchInput,
             ...config
         };
-        
+
         this.products = [];
+        this.filteredProducts = [];
         this.isLoading = false;
-        
+
         this.init();
     }
 
     /**
      * Inicializa la aplicación
      */
-    // Dentro de la clase EStore, agregar el método:
+    init() {
+        console.log('🚀 Inicializando E-Store...');
+        this.setupEventListeners();
+        this.setupThemeToggle();
+        this.updateCurrentYear();
+        this.loadProducts();
+    }
+
+    /**
+     * Configura el alternador de tema oscuro/claro
+     */
     setupThemeToggle() {
-        const themeToggle = document.getElementById('theme-toggle');
+        const themeToggle = document.getElementById(window.EStoreConfig.selectors.themeToggle);
+        if (!themeToggle) {
+            console.warn(`⚠️ Elemento '${window.EStoreConfig.selectors.themeToggle}' no encontrado`);
+            return;
+        }
+
         const themeIcon = themeToggle.querySelector('i');
-        
-        // Cargar tema guardado
-        const savedTheme = localStorage.getItem('theme') || 'light';
+        if (!themeIcon) {
+            console.warn('⚠️ Icono del theme-toggle no encontrado');
+            return;
+        }
+
+        // Cargar tema guardado o usar tema por defecto
+        const savedTheme = localStorage.getItem(window.EStoreConfig.app.themeStorageKey) ||
+                          window.EStoreConfig.app.defaultTheme;
         document.documentElement.setAttribute('data-theme', savedTheme);
         themeIcon.className = savedTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-        
+
+        // Configurar event listener
         themeToggle.addEventListener('click', () => {
             const currentTheme = document.documentElement.getAttribute('data-theme');
             const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            
+
             document.documentElement.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
+            localStorage.setItem(window.EStoreConfig.app.themeStorageKey, newTheme);
             themeIcon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+
+            console.log(`🎨 Tema cambiado a: ${newTheme}`);
         });
-    }
-    
-    // En el método init(), agregar:
-    init() {
-        this.setupEventListeners();
-        this.setupThemeToggle(); // Agregar esta línea
-        this.updateCurrentYear();
-        this.loadProducts();
+
+        console.log('✅ Theme toggle configurado');
     }
 
     /**
      * Configura los event listeners
      */
     setupEventListeners() {
+        // Event listener para DOM cargado
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM cargado, inicializando E-Store...');
-            this.updateCurrentYear();
+            console.log('📄 DOM cargado completamente');
         });
 
-        // Listener para recargar productos si es necesario
+        // Listener para cambios de hash (navegación)
         window.addEventListener('hashchange', () => {
             this.handleRouteChange();
         });
+
+        // Configurar búsqueda en tiempo real
+        this.setupSearchFunctionality();
+
+        console.log('✅ Event listeners configurados');
+    }
+
+    /**
+     * Configura la funcionalidad de búsqueda
+     */
+    setupSearchFunctionality() {
+        const searchInput = document.getElementById(this.config.searchInputId);
+        if (!searchInput) {
+            console.warn(`⚠️ Elemento de búsqueda '${this.config.searchInputId}' no encontrado`);
+            return;
+        }
+
+        let searchTimeout;
+
+        searchInput.addEventListener('input', (event) => {
+            const query = event.target.value.trim();
+
+            // Debounce para evitar búsquedas excesivas
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                this.searchProducts(query);
+            }, window.EStoreConfig.search.debounceDelay);
+        });
+
+        console.log('🔍 Funcionalidad de búsqueda configurada');
     }
 
     /**
      * Actualiza el año actual en el footer
      */
     updateCurrentYear() {
-        const yearElement = document.getElementById('current-year');
+        const yearElement = document.getElementById(window.EStoreConfig.selectors.currentYear);
         if (yearElement) {
-            yearElement.textContent = new Date().getFullYear();
-            console.log('Año actualizado:', new Date().getFullYear());
+            const currentYear = new Date().getFullYear();
+            yearElement.textContent = currentYear;
+            console.log(`📅 Año actualizado: ${currentYear}`);
+        } else {
+            console.warn(`⚠️ Elemento '${window.EStoreConfig.selectors.currentYear}' no encontrado`);
         }
     }
 
@@ -100,73 +158,50 @@ class EStore {
      */
     async loadProducts() {
         if (this.isLoading) {
-            console.log('Ya hay una carga en progreso...');
+            console.log('⏳ Ya hay una carga en progreso, ignorando solicitud...');
             return;
         }
 
         try {
             this.isLoading = true;
-            console.log('Iniciando carga de productos...');
+            console.log('🚀 Iniciando carga de productos desde Google Sheets...');
 
             // Verificar dependencias
             if (!window.GoogleSheetsUtils) {
-                throw new Error('GoogleSheetsUtils no está disponible');
+                throw new Error('GoogleSheetsUtils no está disponible. Verifica que el script esté cargado correctamente.');
             }
 
             // Mostrar mensaje de carga
             this.showLoadingMessage();
 
-            // Construir URL de exportación
-            const url = this.buildSheetUrl();
-            console.log('Cargando desde URL:', url);
+            // Usar el método mejorado de GoogleSheetsUtils
+            const products = await window.GoogleSheetsUtils.loadProductsFromPublicSheet(
+                this.config.sheetId,
+                parseInt(this.config.gid) || 0
+            );
 
-            // Cargar y procesar datos
-            const csvText = await this.fetchCsvData(url);
-            const products = window.GoogleSheetsUtils.convertCsvToProducts(csvText);
-
-            if (products.length === 0) {
-                throw new Error('No se encontraron productos en el CSV');
+            if (!products || products.length === 0) {
+                throw new Error('No se encontraron productos válidos en la hoja de Google Sheets');
             }
 
+            // Almacenar productos y filtrados
             this.products = products;
+            this.filteredProducts = [...products];
+
+            // Mostrar productos
             this.displayProducts(products);
             this.updateProductCounter(products.length);
 
-            console.log(`✅ ${products.length} productos cargados exitosamente`);
+            console.log(`✅ ${products.length} productos cargados y mostrados exitosamente`);
 
         } catch (error) {
             console.error('❌ Error al cargar productos:', error);
-            this.showErrorMessage(error.message);
+            this.showErrorMessage(error.message || 'Error desconocido al cargar productos');
         } finally {
             this.isLoading = false;
         }
     }
 
-    /**
-     * Construye la URL de Google Sheets
-     */
-    buildSheetUrl() {
-        let url = `https://docs.google.com/spreadsheets/d/${this.config.sheetId}/export?format=csv`;
-        if (this.config.gid !== "0") {
-            url += `&gid=${this.config.gid}`;
-        }
-        return url;
-    }
-
-    /**
-     * Obtiene datos CSV desde Google Sheets
-     */
-    async fetchCsvData(url) {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
-        }
-
-        const csvText = await response.text();
-        console.log(`📄 CSV cargado, longitud: ${csvText.length} caracteres`);
-        
-        return csvText;
-    }
 
     /**
      * Muestra mensaje de carga
@@ -176,10 +211,11 @@ class EStore {
         if (container) {
             container.innerHTML = `
                 <div class="loading-message">
-                    <i class="fas fa-spinner fa-spin"></i> 
-                    Cargando productos desde Google Sheets...
+                    <i class="fas fa-spinner fa-spin"></i>
+                    ${window.EStoreConfig.ui.loadingMessage}
                 </div>
             `;
+            console.log('⏳ Mostrando mensaje de carga');
         }
     }
 
@@ -204,11 +240,13 @@ class EStore {
 
     /**
      * Actualiza el contador de productos
+     * @param {number} count - Número de productos a mostrar
      */
     updateProductCounter(count) {
         const counterElement = document.getElementById(this.config.counterElementId);
         if (counterElement) {
-            counterElement.textContent = `${count} productos encontrados`;
+            counterElement.textContent = window.EStoreConfig.ui.resultsText(count);
+            console.log(`📊 Contador actualizado: ${count} productos`);
         }
     }
 
@@ -274,11 +312,14 @@ class EStore {
 
     /**
      * Procesa la URL de imagen
+     * @param {string} originalUrl - URL original de la imagen
+     * @param {number} index - Índice del producto
+     * @returns {string} URL procesada
      */
     processImageUrl(originalUrl, index) {
         try {
             if (!originalUrl) {
-                return 'assets/images/placeholder.jpg';
+                return window.EStoreConfig.images.placeholder;
             }
 
             const processedUrl = window.GoogleSheetsUtils.fixImageUrl(originalUrl);
@@ -287,12 +328,14 @@ class EStore {
 
         } catch (error) {
             console.error(`❌ Error procesando imagen para producto ${index + 1}:`, error);
-            return 'assets/images/placeholder.jpg';
+            return window.EStoreConfig.images.placeholder;
         }
     }
 
     /**
      * Configura event listeners para imágenes
+     * @param {HTMLImageElement} img - Elemento de imagen
+     * @param {number} index - Índice del producto
      */
     setupImageEventListeners(img, index) {
         img.addEventListener('load', () => {
@@ -302,66 +345,157 @@ class EStore {
 
         img.addEventListener('error', () => {
             console.error(`❌ Error cargando imagen - Producto ${index + 1}:`, img.src);
-            img.src = 'assets/images/placeholder.jpg';
+            img.src = window.EStoreConfig.images.placeholder;
             img.classList.add('error');
         });
     }
 
     /**
-     * Formatea el precio
+     * Formatea el precio según la configuración regional
+     * @param {number|string} price - Precio a formatear
+     * @returns {string} Precio formateado
      */
     formatPrice(price) {
         const numPrice = parseFloat(price || 0);
-        return numPrice.toLocaleString('es-AR', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
+        try {
+            return numPrice.toLocaleString(window.EStoreConfig.formatting.locale, {
+                style: 'currency',
+                currency: window.EStoreConfig.formatting.currency,
+                minimumFractionDigits: window.EStoreConfig.formatting.priceDecimals,
+                maximumFractionDigits: window.EStoreConfig.formatting.priceDecimals
+            });
+        } catch (error) {
+            // Fallback si la configuración regional no es válida
+            console.warn('⚠️ Error en formato de precio, usando fallback:', error);
+            return `$${numPrice.toFixed(window.EStoreConfig.formatting.priceDecimals)}`;
+        }
     }
 
     /**
-     * Busca productos
+     * Busca productos por nombre o descripción
+     * @param {string} query - Término de búsqueda
      */
     searchProducts(query) {
-        if (!query.trim()) {
+        // Validar y sanitizar la entrada
+        if (typeof query !== 'string') {
+            console.warn('⚠️ Query de búsqueda debe ser un string');
+            query = '';
+        }
+
+        // Sanitizar: remover caracteres potencialmente peligrosos y limitar longitud
+        const sanitizedQuery = query
+            .trim()
+            .replace(/[<>]/g, '') // Remover caracteres HTML
+            .substring(0, 100); // Limitar a 100 caracteres
+
+        console.log(`🔍 Buscando productos con query sanitizado: "${sanitizedQuery}"`);
+
+        if (!sanitizedQuery) {
+            // Mostrar todos los productos si no hay búsqueda
+            this.filteredProducts = [...this.products];
             this.displayProducts(this.products);
+            this.updateProductCounter(this.products.length);
             return;
         }
 
-        const filteredProducts = this.products.filter(product => 
-            product.name.toLowerCase().includes(query.toLowerCase()) ||
-            product.description.toLowerCase().includes(query.toLowerCase())
-        );
-
-        this.displayProducts(filteredProducts);
-        this.updateProductCounter(filteredProducts.length);
-    }
-
-    /**
-     * Filtra productos por categoría
-     */
-    filterByCategory(category) {
-        if (!category || category === 'all') {
-            this.displayProducts(this.products);
+        // Validar que tenemos productos para buscar
+        if (!Array.isArray(this.products) || this.products.length === 0) {
+            console.warn('⚠️ No hay productos disponibles para búsqueda');
+            this.filteredProducts = [];
+            this.displayProducts([]);
+            this.updateProductCounter(0);
             return;
         }
 
-        const filteredProducts = this.products.filter(product => 
-            product.category && product.category.toLowerCase() === category.toLowerCase()
-        );
+        // Filtrar productos que coincidan con la búsqueda
+        this.filteredProducts = this.products.filter(product => {
+            // Validar que el producto tenga las propiedades necesarias
+            if (!product || typeof product !== 'object') {
+                return false;
+            }
 
-        this.displayProducts(filteredProducts);
-        this.updateProductCounter(filteredProducts.length);
+            const searchTerm = sanitizedQuery.toLowerCase();
+            const nameMatch = product.name && typeof product.name === 'string' &&
+                            product.name.toLowerCase().includes(searchTerm);
+            const descriptionMatch = product.description && typeof product.description === 'string' &&
+                                   product.description.toLowerCase().includes(searchTerm);
+            const categoryMatch = product.category && typeof product.category === 'string' &&
+                                product.category.toLowerCase().includes(searchTerm);
+
+            return nameMatch || descriptionMatch || categoryMatch;
+        });
+
+        console.log(`📊 ${this.filteredProducts.length} productos encontrados para "${sanitizedQuery}"`);
+
+        this.displayProducts(this.filteredProducts);
+        this.updateProductCounter(this.filteredProducts.length);
     }
+
 }
 
 // Inicializar la aplicación cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
-    // Configuración de la aplicación
-    const config = {
-        sheetId: "1V517_5Mb2J3yJWYNSJz6jQrJf0alLOocBUcghgg1b7s",
-        gid: "0"
-    };
+    try {
+        console.log('🚀 Iniciando E-Store...');
 
-    // Crear instancia global de la aplicación
-    window.estore = new EStore(config);
+        // Verificar dependencias críticas
+        if (!window.EStoreConfig) {
+            throw new Error('Configuración no cargada. Verifica que config.js esté incluido.');
+        }
+
+        if (!window.GoogleSheetsUtils) {
+            throw new Error('GoogleSheetsUtils no disponible. Verifica que google-sheets.js esté incluido.');
+        }
+
+        // Configuración de la aplicación desde URL o valores por defecto
+        const urlParams = new URLSearchParams(window.location.search);
+        const config = {
+            sheetId: validateSheetId(urlParams.get('sheetId')) || window.EStoreConfig.googleSheets.defaultSheetId,
+            gid: validateGid(urlParams.get('gid')) || window.EStoreConfig.googleSheets.defaultGid
+        };
+
+        console.log('⚙️ Configuración aplicada:', config);
+
+        // Funciones de validación
+        function validateSheetId(sheetId) {
+            if (!sheetId || typeof sheetId !== 'string') return null;
+            // Validar formato de ID de Google Sheets (alphanumeric + hyphens + underscores)
+            if (!/^[a-zA-Z0-9_-]+$/.test(sheetId)) {
+                console.warn('⚠️ ID de hoja inválido en URL, usando valor por defecto');
+                return null;
+            }
+            return sheetId;
+        }
+
+        function validateGid(gid) {
+            if (!gid) return null;
+            const numGid = parseInt(gid);
+            if (isNaN(numGid) || numGid < 0) {
+                console.warn('⚠️ GID inválido en URL, usando valor por defecto');
+                return null;
+            }
+            return numGid.toString();
+        }
+
+        // Crear instancia global de la aplicación
+        window.estore = new EStore(config);
+
+        console.log('✅ E-Store inicializado correctamente');
+
+    } catch (error) {
+        console.error('❌ Error crítico al inicializar E-Store:', error);
+
+        // Mostrar error crítico en la UI
+        const container = document.getElementById(window.EStoreConfig?.selectors?.productsContainer || 'products-container');
+        if (container) {
+            container.innerHTML = `
+                <div class="error-message">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Error al inicializar la aplicación</h3>
+                    <p>${error.message}</p>
+                    <p>Por favor, recarga la página o contacta al soporte técnico.</p>
+                </div>
+            `;
+        }
+    }
 });

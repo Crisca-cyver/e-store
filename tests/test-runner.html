@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E-Store - Test Runner</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+      }
+      .test-results {
+        margin-top: 20px;
+      }
+      .test-suite {
+        margin-bottom: 20px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+      }
+      .test-suite-header {
+        background-color: #f8f9fa;
+        padding: 10px;
+        font-weight: bold;
+        border-bottom: 1px solid #ddd;
+      }
+      .test-case {
+        padding: 10px;
+        border-bottom: 1px solid #eee;
+      }
+      .test-case:last-child {
+        border-bottom: none;
+      }
+      .test-pass {
+        color: #28a745;
+      }
+      .test-fail {
+        color: #dc3545;
+      }
+      .test-pending {
+        color: #ffc107;
+      }
+      .summary {
+        text-align: center;
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+      }
+      .run-tests {
+        display: block;
+        margin: 20px auto;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .run-tests:hover {
+        background-color: #0056b3;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>E-Store - Test Runner</h1>
+      <button class="run-tests" onclick="runTests()">Ejecutar Tests</button>
+
+      <div class="test-results" id="test-results">
+        <p>Haz clic en "Ejecutar Tests" para comenzar.</p>
+      </div>
+    </div>
+
+    <!-- Dependencias de test -->
+    <script src="https://cdn.jsdelivr.net/npm/mocha@10.2.0/mocha.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chai@4.3.7/chai.js"></script>
+
+    <!-- Scripts de la aplicación -->
+    <script src="../src/js/config.js"></script>
+    <script src="../src/js/google-sheets.js"></script>
+    <script src="../src/js/main.js"></script>
+
+    <!-- Tests -->
+    <script src="unit/google-sheets-utils.test.js"></script>
+    <script src="unit/estore.test.js"></script>
+
+    <script>
+      // Configurar Mocha
+      mocha.setup("bdd");
+      const expect = chai.expect;
+
+      function runTests() {
+        const resultsDiv = document.getElementById("test-results");
+        resultsDiv.innerHTML = "<p>Ejecutando tests...</p>";
+
+        // Ejecutar tests
+        mocha.run(function (failures) {
+          const summary = document.createElement("div");
+          summary.className = "summary";
+
+          if (failures === 0) {
+            summary.innerHTML =
+              '<h3 style="color: #28a745;">✅ Todos los tests pasaron</h3>';
+          } else {
+            summary.innerHTML = `<h3 style="color: #dc3545;">❌ ${failures} test(s) fallaron</h3>`;
+          }
+
+          resultsDiv.appendChild(summary);
+        });
+      }
+
+      // Auto-ejecutar tests si se especifica en URL
+      if (window.location.search.includes("auto")) {
+        setTimeout(runTests, 100);
+      }
+    </script>
+  </body>
+</html>

@@ -6,7 +6,9 @@
   "scripts": {
     "start": "npx serve",
     "dev": "npx live-server",
-    "test": "echo \"No hay tests configurados\""
+    "test": "npx live-server --port=3001 tests/test-runner.html",
+    "test:unit": "echo \"Ejecuta tests en el navegador: npm test\"",
+    "lint": "echo \"No hay linter configurado\""
   },
   "keywords": [
     "ecommerce",

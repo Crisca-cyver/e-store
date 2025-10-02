@@ -1,17 +1,37 @@
 /**
  * Google Sheets Utilities
  * Utilidades para trabajar con Google Sheets y Google Drive
- * 
+ *
  * @author Tu Nombre
  * @version 2.0.0
  * @description Manejo de URLs de Google Drive y conversión de datos CSV
  */
 
-class GoogleSheetsUtils {
-    constructor() {
-        this.imageProxyUrl = 'https://images.weserv.nl/';
-        this.placeholderImage = 'assets/images/placeholder.jpg';
+// Implementar patrón de módulo con IIFE para mejor encapsulación
+const GoogleSheetsUtils = (function() {
+    'use strict';
+
+    // Configuración interna del módulo
+    const config = {
+        imageProxyUrl: 'https://images.weserv.nl/',
+        placeholderImage: 'assets/images/placeholder.jpg'
+    };
+
+    // Inicializar configuración desde EStoreConfig si está disponible
+    function initializeConfig() {
+        if (window.EStoreConfig?.images) {
+            config.imageProxyUrl = window.EStoreConfig.images.proxyUrl || config.imageProxyUrl;
+            config.placeholderImage = window.EStoreConfig.images.placeholder || config.placeholderImage;
+        }
     }
+
+    // Clase interna de GoogleSheetsUtils
+    class GoogleSheetsUtils {
+        constructor() {
+            initializeConfig();
+            this.imageProxyUrl = config.imageProxyUrl;
+            this.placeholderImage = config.placeholderImage;
+        }
 
     /**
      * Convierte URL de Google Drive a formato accesible
@@ -209,20 +229,31 @@ class GoogleSheetsUtils {
     }
 
     /**
-     * Parsea una fila CSV individual
+     * Parsea una fila CSV individual con manejo avanzado de comillas y escapes
      * @param {string} row - Fila CSV
      * @returns {Array} Array de valores
      */
     parseCsvRow(row) {
+        if (!row || row.trim() === '') {
+            return [];
+        }
+
         const result = [];
         let current = '';
         let inQuotes = false;
-        
+
         for (let i = 0; i < row.length; i++) {
             const char = row[i];
-            
+            const nextChar = i + 1 < row.length ? row[i + 1] : '';
+
             if (char === '"') {
-                inQuotes = !inQuotes;
+                // Si encontramos comillas escapadas (""), las añadimos como una sola comilla
+                if (inQuotes && nextChar === '"') {
+                    current += '"';
+                    i++; // Saltar la siguiente comilla
+                } else {
+                    inQuotes = !inQuotes;
+                }
             } else if (char === ',' && !inQuotes) {
                 result.push(current.trim());
                 current = '';
@@ -230,7 +261,7 @@ class GoogleSheetsUtils {
                 current += char;
             }
         }
-        
+
         result.push(current.trim());
         return result;
     }
@@ -373,7 +404,7 @@ class GoogleSheetsUtils {
      */
     calculatePriceRange(products) {
         const prices = products.map(p => p.price).filter(p => p > 0);
-        
+
         if (prices.length === 0) {
             return { min: 0, max: 0, avg: 0 };
         }
@@ -384,7 +415,89 @@ class GoogleSheetsUtils {
             avg: prices.reduce((sum, price) => sum + price, 0) / prices.length
         };
     }
+
+    /**
+     * Carga productos desde una hoja de Google Sheets pública
+     * @param {string} sheetIdOrUrl - ID o URL de la hoja
+     * @param {number} gid - ID de la subhoja (0 por defecto)
+     * @returns {Promise<Array>} Promesa que resuelve a array de productos
+     */
+    async loadProductsFromPublicSheet(sheetIdOrUrl, gid = 0) {
+        try {
+            console.log('🔄 Cargando productos desde hoja pública:', sheetIdOrUrl);
+
+            // Extraer ID de la hoja de la URL si es necesario
+            const sheetId = this.extractSheetId(sheetIdOrUrl);
+            if (!sheetId) {
+                throw new Error('No se pudo extraer el ID de la hoja de Google Sheets');
+            }
+
+            // Construir URL de exportación CSV
+            const csvUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv${gid !== 0 ? `&gid=${gid}` : ''}`;
+
+            console.log('📄 Intentando cargar CSV desde:', csvUrl);
+
+            // Cargar datos CSV
+            const response = await fetch(csvUrl);
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status} - ${response.statusText}`);
+            }
+
+            const csvText = await response.text();
+            if (!csvText || csvText.trim() === '') {
+                throw new Error('El archivo CSV está vacío');
+            }
+
+            console.log(`📊 CSV cargado, ${csvText.length} caracteres`);
+            const products = this.convertCsvToProducts(csvText);
+
+            console.log(`✅ ${products.length} productos cargados exitosamente`);
+            return products;
+
+        } catch (error) {
+            console.error('❌ Error cargando productos:', error);
+            throw new Error(`Error al cargar productos: ${error.message}`);
+        }
+    }
+
+    /**
+     * Extrae el ID de la hoja de una URL completa
+     * @param {string} url - URL de Google Sheets
+     * @returns {string|null} ID de la hoja o null
+     */
+    extractSheetId(url) {
+        if (!url || typeof url !== 'string') {
+            return null;
+        }
+
+        // Si ya es un ID (solo caracteres alfanuméricos y guiones), devolverlo
+        if (/^[a-zA-Z0-9_-]+$/.test(url)) {
+            return url;
+        }
+
+        // Patrones para extraer ID de diferentes formatos de URL
+        const patterns = [
+            /spreadsheets\/d\/([a-zA-Z0-9_-]+)/,
+            /\/d\/e\/([a-zA-Z0-9_-]+)/,
+            /id=([a-zA-Z0-9_-]+)/
+        ];
+
+        for (const pattern of patterns) {
+            const match = url.match(pattern);
+            if (match && match[1]) {
+                console.log('🎯 ID de hoja extraído:', match[1]);
+                return match[1];
+            }
+        }
+
+        return null;
+    }
 }
+
+// Retornar la clase del módulo
+return GoogleSheetsUtils;
+
+})(); // Fin del IIFE
 
 // Crear instancia global para compatibilidad
 window.GoogleSheetsUtils = new GoogleSheetsUtils();
@@ -393,7 +506,8 @@ window.GoogleSheetsUtils = new GoogleSheetsUtils();
 window.googleSheetsUtils = {
     fixImageUrl: (url) => window.GoogleSheetsUtils.fixImageUrl(url),
     convertGoogleDriveUrl: (url) => window.GoogleSheetsUtils.convertGoogleDriveUrl(url),
-    convertCsvToProducts: (csv) => window.GoogleSheetsUtils.convertCsvToProducts(csv)
+    convertCsvToProducts: (csv) => window.GoogleSheetsUtils.convertCsvToProducts(csv),
+    loadProductsFromPublicSheet: (sheetId, gid) => window.GoogleSheetsUtils.loadProductsFromPublicSheet(sheetId, gid)
 };
 
 console.log('✅ Google Sheets Utilities cargadas correctamente');
