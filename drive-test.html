@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prueba de Google Drive - Imágenes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .test-container {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .image-test {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            margin: 10px 0;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 4px;
+        }
+        .image-test img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+        .image-info {
+            flex: 1;
+        }
+        .url-input {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .test-button {
+            background: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .test-button:hover {
+            background: #0056b3;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <h1>Prueba de Imágenes de Google Drive</h1>
+    
+    <div class="test-container">
+        <h2>Probar URL de Google Drive</h2>
+        <input type="text" id="drive-url" class="url-input" placeholder="Pega aquí la URL de Google Drive">
+        <button onclick="testDriveUrl()" class="test-button">Probar URL</button>
+        <div id="test-result"></div>
+    </div>
+
+    <div class="test-container">
+        <h2>Ejemplos de URLs de Google Drive</h2>
+        <div id="examples-container"></div>
+    </div>
+
+    <script src="fix-google-sheets.js"></script>
+    <script>
+        // URLs de ejemplo para probar
+        const exampleUrls = [
+            {
+                name: "URL de compartir completa",
+                url: "https://drive.google.com/file/d/1ABC123DEF456GHI789JKL/view?usp=sharing",
+                description: "Formato típico cuando compartes un archivo"
+            },
+            {
+                name: "URL de apertura",
+                url: "https://drive.google.com/open?id=1ABC123DEF456GHI789JKL",
+                description: "Formato alternativo de Google Drive"
+            },
+            {
+                name: "Solo ID del archivo",
+                url: "1ABC123DEF456GHI789JKL",
+                description: "Solo el ID del archivo (más limpio en la hoja)"
+            }
+        ];
+
+        function testDriveUrl() {
+            const url = document.getElementById('drive-url').value.trim();
+            const resultDiv = document.getElementById('test-result');
+            
+            if (!url) {
+                resultDiv.innerHTML = '<div class="status error">Por favor, ingresa una URL</div>';
+                return;
+            }
+
+            try {
+                const convertedUrl = window.googleSheetsUtils.convertGoogleDriveUrl(url);
+                const fixedUrl = window.googleSheetsUtils.fixImageUrl(url);
+                
+                resultDiv.innerHTML = `
+                    <div class="status success">
+                        <strong>URL Original:</strong><br>
+                        <code>${url}</code><br><br>
+                        <strong>URL Convertida:</strong><br>
+                        <code>${convertedUrl || 'No se pudo convertir'}</code><br><br>
+                        <strong>URL Final:</strong><br>
+                        <code>${fixedUrl}</code>
+                    </div>
+                    <div class="image-test">
+                        <img src="${fixedUrl}" alt="Imagen de prueba" onerror="this.style.border='2px solid red'; this.alt='Error al cargar';">
+                        <div class="image-info">
+                            <strong>Resultado de la carga:</strong><br>
+                            Si ves la imagen, la URL funciona correctamente.
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="status error">Error: ${error.message}</div>`;
+            }
+        }
+
+        function loadExamples() {
+            const container = document.getElementById('examples-container');
+            
+            exampleUrls.forEach((example, index) => {
+                const convertedUrl = window.googleSheetsUtils.convertGoogleDriveUrl(example.url);
+                const fixedUrl = window.googleSheetsUtils.fixImageUrl(example.url);
+                
+                const exampleDiv = document.createElement('div');
+                exampleDiv.className = 'image-test';
+                exampleDiv.innerHTML = `
+                    <img src="${fixedUrl}" alt="${example.name}" onerror="this.style.border='2px solid red'; this.alt='Imagen de ejemplo no disponible';">
+                    <div class="image-info">
+                        <strong>${example.name}</strong><br>
+                        ${example.description}<br><br>
+                        <strong>Original:</strong> <code>${example.url}</code><br>
+                        <strong>Convertida:</strong> <code>${convertedUrl || 'No convertida'}</code>
+                    </div>
+                `;
+                
+                container.appendChild(exampleDiv);
+            });
+        }
+
+        // Cargar ejemplos al cargar la página
+        window.onload = loadExamples;
+    </script>
+</body>
+</html>
