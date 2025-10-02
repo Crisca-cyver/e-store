@@ -3,104 +3,131 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>store - Tienda Online</title>
-    <link rel="stylesheet" href="styles.css" />
-    <link rel="stylesheet" href="error-styles.css" />
+    <meta
+      name="description"
+      content="E-Store - Tienda online con integración a Google Sheets"
+    />
+    <title>E-Store | Tienda Online</title>
+
+    <!-- Favicon -->
+    <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml" />
+
+    <!-- Estilos CSS -->
+    <link rel="stylesheet" href="src/css/main.css" />
+
+    <!-- Font Awesome -->
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
     />
   </head>
   <body>
-    <header>
-      <div class="logo-container">
-        <a href="index.html" class="logo">
-          <img src="images/logo.svg" alt="store Logo" class="logo-img" />
-          store
-        </a>
+    <!-- Header -->
+    <header class="header">
+      <div class="container">
+        <div class="header-content">
+          <a href="/" class="logo">
+            <img src="assets/images/logo.svg" alt="E-Store Logo" />
+            <span>E-Store</span>
+          </a>
+
+          <!-- En el nav, agregar el botón de tema -->
+          <nav>
+            <ul class="nav">
+              <li><a href="#" class="active">Inicio</a></li>
+              <li><a href="#">Productos</a></li>
+              <li><a href="#">Categorías</a></li>
+              <li><a href="#">Contacto</a></li>
+              <li>
+                <button class="theme-toggle" id="theme-toggle">
+                  <i class="fas fa-moon"></i>
+                </button>
+              </li>
+            </ul>
+          </nav>
+        </div>
       </div>
-      <button id="menu-toggle" class="menu-toggle">
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-      <nav>
-        <ul class="nav-links">
-          <li><a href="#" class="active">All</a></li>
-        </ul>
-      </nav>
     </header>
 
-    <aside class="sidebar">
-      <div class="collections">
-        <h3>Collections</h3>
-        <ul>
-          <li><a href="#">All</a></li>
-          <li><a href="#">Bags</a></li>
-          <li><a href="#">Drinkware</a></li>
-          <li><a href="#">Electronics</a></li>
-          <li><a href="#">Footwear</a></li>
-          <li><a href="#">Headwear</a></li>
-          <li><a href="#">Hoodies</a></li>
-          <li><a href="#">Jackets</a></li>
-          <li><a href="#">Kids</a></li>
-          <li><a href="#">Pets</a></li>
-        </ul>
-      </div>
-    </aside>
+    <!-- Contenido Principal -->
+    <main class="main-content">
+      <div class="container">
+        <h1 class="page-title">Catálogo de Productos</h1>
+        <p class="page-subtitle">
+          Explora nuestra selección de productos cargados directamente desde
+          Google Sheets
+        </p>
 
-    <main>
-      <div class="sort-options">
-        <div class="results-info">
-          <span id="results-count">Cargando productos...</span>
-        </div>
-        <div class="sort-by">
-          <label for="sort-select">Ordenar por:</label>
-          <select id="sort-select">
-            <option value="featured">Presentados</option>
-            <option value="price-low">Precio: bajo a alto</option>
-            <option value="price-high">Precio: alto a bajo</option>
-            <option value="name">Nombre: A a Z</option>
-          </select>
-        </div>
-      </div>
+        <!-- Sección de Productos -->
+        <section class="products-section">
+          <div class="products-header">
+            <div class="results-count" id="results-count">
+              Cargando productos...
+            </div>
 
-      <div id="products-container" class="products-grid">
-        <!-- Los productos se cargarán aquí dinámicamente -->
+            <div class="filters">
+              <input
+                type="text"
+                id="search-input"
+                placeholder="Buscar productos..."
+                class="search-input"
+              />
+            </div>
+          </div>
+
+          <!-- Contenedor de Productos -->
+          <div class="products-grid" id="products-container">
+            <!-- Los productos se cargarán dinámicamente aquí -->
+            <div class="loading-message">
+              <i class="fas fa-spinner fa-spin"></i>
+              <p>Cargando productos...</p>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
 
-    <footer>
-      <div class="footer-content">
-        <div class="footer-section">
-          <h3>Acerca de store</h3>
+    <!-- Footer -->
+    <footer class="footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-section">
+            <h3>Acerca de</h3>
+            <ul>
+              <li><a href="#">Nuestra Historia</a></li>
+              <li><a href="#">Equipo</a></li>
+              <li><a href="#">Misión y Visión</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-section">
+            <h3>Ayuda</h3>
+            <ul>
+              <li><a href="#">Preguntas Frecuentes</a></li>
+              <li><a href="#">Envíos y Devoluciones</a></li>
+              <li><a href="#">Métodos de Pago</a></li>
+            </ul>
+          </div>
+
+          <div class="footer-section">
+            <h3>Legal</h3>
+            <ul>
+              <li><a href="#">Términos y Condiciones</a></li>
+              <li><a href="#">Política de Privacidad</a></li>
+              <li><a href="#">Términos de Servicio</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="footer-bottom">
           <p>
-            Tu tienda de referencia para productos de calidad a excelentes
-            precios.
+            &copy; <span id="current-year"></span> E-Store. Todos los derechos
+            reservados.
           </p>
         </div>
-        <div class="footer-section">
-          <h3>Servicio al Cliente</h3>
-          <ul>
-            <li><a href="#">Contáctanos</a></li>
-            <li><a href="#">Información de Envío</a></li>
-            <li><a href="#">Devoluciones</a></li>
-            <li><a href="#">Guía de Tallas</a></li>
-          </ul>
-        </div>
-        <div class="footer-section">
-          <h3>Enlaces Rápidos</h3>
-          <ul>
-            <li><a href="#">Política de Privacidad</a></li>
-            <li><a href="#">Términos de Servicio</a></li>
-            <li><a href="#">Preguntas Frecuentes</a></li>
-          </ul>
-        </div>
-      </div>
-      <div class="footer-bottom">
-        <p>&copy; <span id="current-year"></span> store. Todos los derechos reservados.</p>
       </div>
     </footer>
+
     <!-- Botón flotante para cargar desde Google Sheets -->
     <a
       href="?sheetId=1V517_5Mb2J3yJWYNSJz6jQrJf0alLOocBUcghgg1b7s&gid=0"
@@ -110,183 +137,19 @@
       <i class="fab fa-google"></i>
     </a>
 
-    <!-- Cargar scripts en el orden correcto -->
-    <script src="products.js"></script>
-    <script src="fix-google-sheets.js"></script>
+    <!-- Reemplazar el botón flotante de Google por WhatsApp -->
+    <!-- AQUÍ debes reemplazar TUNUMERO con tu número de WhatsApp -->
+    <a
+      href="https://wa.me/+5493518027879"
+      class="floating-whatsapp-btn"
+      title="Contactar por WhatsApp"
+      target="_blank"
+    >
+      <i class="fab fa-whatsapp"></i>
+    </a>
 
-    <!-- Script principal después de cargar las utilidades -->
-    <script>
-      // ID de la hoja de Google Sheets del cliente
-      const sheetId = "1V517_5Mb2J3yJWYNSJz6jQrJf0alLOocBUcghgg1b7s";
-      const gid = "0";
-
-      // Función para cargar productos desde Google Sheets
-      async function loadProducts() {
-        try {
-          console.log("Iniciando carga de productos...");
-
-          // Verificar que las utilidades estén disponibles
-          if (!window.googleSheetsUtils) {
-            throw new Error("window.googleSheetsUtils no está disponible");
-          }
-
-          if (typeof window.googleSheetsUtils.fixImageUrl !== "function") {
-            throw new Error(
-              "window.googleSheetsUtils.fixImageUrl no es una función"
-            );
-          }
-
-          if (
-            typeof window.googleSheetsUtils.convertCsvToProducts !== "function"
-          ) {
-            throw new Error(
-              "window.googleSheetsUtils.convertCsvToProducts no es una función"
-            );
-          }
-
-          console.log("Utilidades de Google Sheets verificadas correctamente");
-
-          // Mostrar mensaje de carga
-          document.getElementById("products-container").innerHTML =
-            '<div class="loading-message"><i class="fas fa-spinner fa-spin"></i> Cargando productos...</div>';
-
-          // Construir URL de exportación
-          let url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv`;
-          if (gid !== "0") {
-            url += `&gid=${gid}`;
-          }
-
-          console.log("Cargando desde URL:", url);
-
-          // Cargar CSV
-          const response = await fetch(url);
-          if (!response.ok) {
-            throw new Error(`Error HTTP: ${response.status}`);
-          }
-
-          const csvText = await response.text();
-          console.log("CSV cargado, longitud:", csvText.length);
-          console.log(
-            "Primeras 200 caracteres del CSV:",
-            csvText.substring(0, 200)
-          );
-
-          // Convertir CSV a productos usando las utilidades
-          const products =
-            window.googleSheetsUtils.convertCsvToProducts(csvText);
-          console.log("Productos convertidos:", products.length);
-
-          if (products.length === 0) {
-            throw new Error("No se encontraron productos en el CSV");
-          }
-
-          // Mostrar productos
-          displayProducts(products);
-
-          // Actualizar contador
-          document.getElementById(
-            "results-count"
-          ).textContent = `${products.length} productos encontrados`;
-        } catch (error) {
-          console.error("Error al cargar productos:", error);
-          document.getElementById(
-            "products-container"
-          ).innerHTML = `<div class="error-message">Error al cargar productos: ${error.message}</div>`;
-        }
-      }
-
-      // Función para mostrar productos
-      function displayProducts(products) {
-        console.log("Mostrando productos:", products.length);
-        const container = document.getElementById("products-container");
-        container.innerHTML = "";
-
-        products.forEach((product, index) => {
-          console.log(`Procesando producto ${index + 1}:`, product);
-
-          const card = document.createElement("div");
-          card.className = "product-card";
-
-          // Usar la función fixImageUrl para manejar las URLs de imágenes
-          let imageUrl;
-          try {
-            const originalUrl = product.image || "images/placeholder.jpg";
-            imageUrl = window.googleSheetsUtils.fixImageUrl(originalUrl);
-            console.log(
-              `Producto ${index + 1} - URL original:`,
-              originalUrl,
-              "→ URL procesada:",
-              imageUrl
-            );
-          } catch (error) {
-            console.error(
-              `Error procesando imagen para producto ${index + 1}:`,
-              error
-            );
-            imageUrl = "images/placeholder.jpg";
-          }
-
-          card.innerHTML = `
-                    <div class="product-image">
-                        <img src="${imageUrl}" 
-                             alt="${product.name || "Producto"}" 
-                             loading="lazy" 
-                             data-product-id="${product.id}"
-                             data-original-url="${product.image}"
-                             onerror="console.error('Error cargando imagen producto ${
-                               index + 1
-                             }:', this.src, 'Original:', this.dataset.originalUrl); this.src='images/placeholder.jpg'; this.onerror=null;"
-                             onload="console.log('Imagen cargada correctamente producto ${
-                               index + 1
-                             }:', this.src); this.classList.add('loaded');">
-                    </div>
-                    <div class="product-info">
-                        <div class="product-name">${
-                          product.name || "Producto sin nombre"
-                        }</div>
-                        <div class="product-description">${
-                          product.description || "Sin descripción"
-                        }</div>
-                        <div class="product-price">$ ${parseFloat(
-                          product.price || 0
-                        ).toFixed(2)}</div>
-                    </div>
-                `;
-
-          container.appendChild(card);
-        });
-
-        console.log("Productos mostrados en el DOM");
-      }
-
-      // Esperar a que el DOM esté completamente cargado
-      document.addEventListener("DOMContentLoaded", function () {
-        console.log("DOM cargado, iniciando carga de productos...");
-        
-        // Actualizar año automáticamente
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-
-        // Pequeña pausa para asegurar que todos los scripts estén cargados
-        setTimeout(() => {
-          loadProducts();
-        }, 100);
-      });
-
-      // Fallback por si DOMContentLoaded ya se ejecutó
-      if (document.readyState === "loading") {
-        // El DOM aún se está cargando
-        console.log("DOM aún cargando, esperando...");
-      } else {
-        // El DOM ya está cargado
-        console.log("DOM ya cargado, iniciando carga inmediata...");
-        
-        // Actualizar año automáticamente
-        document.getElementById('current-year').textContent = new Date().getFullYear();
-        
-        setTimeout(() => {
-          loadProducts();
-        }, 100);
-      }
-    </script>
+    <!-- Scripts -->
+    <script src="src/js/google-sheets.js"></script>
+    <script src="src/js/main.js"></script>
   </body>
 </html>

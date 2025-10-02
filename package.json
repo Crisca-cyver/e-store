@@ -1,0 +1,41 @@
+{
+  "name": "e-store",
+  "version": "1.0.0",
+  "description": "Tienda online que utiliza Google Sheets como base de datos",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx serve",
+    "dev": "npx live-server",
+    "test": "echo \"No hay tests configurados\""
+  },
+  "keywords": [
+    "ecommerce",
+    "google-sheets",
+    "tienda-online",
+    "javascript",
+    "html",
+    "css"
+  ],
+  "author": "Tu Nombre",
+  "license": "MIT",
+  "devDependencies": {
+    "live-server": "^1.2.2",
+    "serve": "^14.2.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tu-usuario/e-store"
+  },
+  "bugs": {
+    "url": "https://github.com/tu-usuario/e-store/issues"
+  },
+  "homepage": "https://github.com/tu-usuario/e-store#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}
