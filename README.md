@@ -18,5 +18,5 @@ E-Store es una aplicación web que permite crear una tienda online completa util
 
 1. Clona este repositorio:
    ```bash
-   git clone https://github.com/tu-usuario/e-store.git
+   git clone https://github.com/Crisca-cyver/e-store.git
    cd e-store
