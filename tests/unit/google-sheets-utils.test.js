@@ -14,7 +14,7 @@ describe('GoogleSheetsUtils', () => {
     describe('convertGoogleDriveUrl', () => {
         test('debe convertir URL de Google Drive correctamente', () => {
             const input = 'https://drive.google.com/file/d/1ABC123/view';
-            const expected = 'https://images.weserv.nl/?url=drive.google.com/uc?export=view%26id=1ABC123';
+            const expected = 'https://images.weserv.nl/?url=https%3A//drive.google.com/uc%3Fexport%3Dview%26id%3D1ABC123';
 
             const result = utils.convertGoogleDriveUrl(input);
             expect(result).toBe(expected);

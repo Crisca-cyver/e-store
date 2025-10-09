@@ -55,7 +55,8 @@ const GoogleSheetsUtils = (function() {
         
         if (fileId) {
             // Usar proxy CORS para evitar bloqueos
-            const proxyUrl = `${this.imageProxyUrl}?url=drive.google.com/uc?export=view%26id=${fileId}`;
+            const driveUrl = `https://drive.google.com/uc?export=view&id=${fileId}`;
+            const proxyUrl = `${this.imageProxyUrl}?url=${encodeURIComponent(driveUrl)}`;
             console.log('✅ URL de Google Drive convertida con proxy:', proxyUrl);
             return proxyUrl;
         }
@@ -169,30 +170,37 @@ const GoogleSheetsUtils = (function() {
             'name': 'name',
             'producto': 'name',
             'title': 'name',
-            
+
             'descripcion': 'description',
             'description': 'description',
             'desc': 'description',
-            
+
             'precio': 'price',
             'price': 'price',
             'cost': 'price',
             'valor': 'price',
-            
+
             'imagen': 'image',
             'image': 'image',
             'imagenurl': 'image',
             'imageurl': 'image',
             'img': 'image',
-            
+
+            'imagen1': 'image1',
+            'image1': 'image1',
+            'imagen2': 'image2',
+            'image2': 'image2',
+            'imagen3': 'image3',
+            'image3': 'image3',
+
             'categoria': 'category',
             'category': 'category',
             'cat': 'category',
-            
+
             'stock': 'stock',
             'cantidad': 'stock',
             'inventory': 'stock',
-            
+
             'id': 'id',
             'codigo': 'id',
             'sku': 'id'
@@ -279,7 +287,7 @@ const GoogleSheetsUtils = (function() {
             name: '',
             description: '',
             price: 0,
-            image: '',
+            images: [], // Array de imágenes
             category: '',
             stock: null
         };
@@ -288,21 +296,34 @@ const GoogleSheetsUtils = (function() {
         Object.keys(headers).forEach(colIndex => {
             const fieldName = headers[colIndex];
             const value = row[colIndex] || '';
-            
+
             if (fieldName && value) {
                 product[fieldName] = this.processFieldValue(fieldName, value);
             }
         });
 
-        // Procesar imagen
-        if (product.image) {
-            product.image = this.convertGoogleDriveUrl(product.image);
+        // Procesar imágenes (image, image1, image2, image3)
+        const imageFields = ['image', 'image1', 'image2', 'image3'];
+        imageFields.forEach(field => {
+            if (product[field]) {
+                const processedUrl = this.convertGoogleDriveUrl(product[field]);
+                if (processedUrl && !processedUrl.includes('placeholder')) {
+                    product.images.push(processedUrl);
+                }
+                delete product[field]; // Remover el campo individual
+            }
+        });
+
+        // Si no hay imágenes procesadas, agregar placeholder
+        if (product.images.length === 0) {
+            product.images.push(this.placeholderImage);
         }
 
         console.log(`🏷️ Producto creado:`, {
             id: product.id,
             name: product.name,
-            price: product.price
+            price: product.price,
+            imagesCount: product.images.length
         });
 
         return product;

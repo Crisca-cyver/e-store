@@ -282,18 +282,12 @@ class EStore {
         card.className = "product-card";
         card.setAttribute('data-product-id', product.id || index);
 
-        // Procesar URL de imagen
-        const imageUrl = this.processImageUrl(product.image, index);
+        // Crear contenedor de imágenes
+        const imagesHtml = this.createProductImagesHtml(product, index);
 
         card.innerHTML = `
             <div class="product-image">
-                <img src="${imageUrl}" 
-                     alt="${product.name || "Producto"}" 
-                     loading="lazy" 
-                     data-product-id="${product.id || index}"
-                     data-original-url="${product.image || ''}"
-                     onerror="this.handleImageError(${index})"
-                     onload="this.handleImageLoad(${index})">
+                ${imagesHtml}
             </div>
             <div class="product-info">
                 <div class="product-name">${product.name || "Producto sin nombre"}</div>
@@ -303,34 +297,66 @@ class EStore {
             </div>
         `;
 
-        // Agregar event listeners a la imagen
-        const img = card.querySelector('img');
-        this.setupImageEventListeners(img, index);
+        // Agregar event listeners a las imágenes
+        const imgs = card.querySelectorAll('img');
+        imgs.forEach((img, imgIndex) => {
+            this.setupImageEventListeners(img, `${index}-${imgIndex}`);
+        });
+
+        // Configurar carrusel de imágenes si existe
+        const carousel = card.querySelector('.product-image-carousel');
+        if (carousel) {
+            this.setupImageCarousel(carousel, product);
+        }
 
         return card;
     }
 
     /**
-     * Procesa la URL de imagen
-     * @param {string} originalUrl - URL original de la imagen
-     * @param {number} index - Índice del producto
-     * @returns {string} URL procesada
+     * Crea el HTML para las imágenes del producto
      */
-    processImageUrl(originalUrl, index) {
-        try {
-            if (!originalUrl) {
-                return window.EStoreConfig.images.placeholder;
-            }
+    createProductImagesHtml(product, index) {
+        if (!product.images || product.images.length === 0) {
+            return `<img src="${window.EStoreConfig.images.placeholder}"
+                         alt="${product.name || "Producto"}"
+                         loading="lazy"
+                         data-product-id="${product.id || index}">`;
+        }
 
-            const processedUrl = window.GoogleSheetsUtils.fixImageUrl(originalUrl);
-            console.log(`🖼️ Producto ${index + 1} - URL procesada:`, processedUrl);
-            return processedUrl;
+        // Si hay múltiples imágenes, mostrar la primera y crear un carrusel
+        if (product.images.length > 1) {
+            const imagesHtml = product.images.map((imageUrl, imgIndex) => {
+                const isActive = imgIndex === 0 ? 'active' : '';
+                return `<img src="${imageUrl}"
+                             alt="${product.name || "Producto"} - Imagen ${imgIndex + 1}"
+                             loading="lazy"
+                             data-product-id="${product.id || index}"
+                             data-image-index="${imgIndex}"
+                             class="product-image-item ${isActive}">`;
+            }).join('');
 
-        } catch (error) {
-            console.error(`❌ Error procesando imagen para producto ${index + 1}:`, error);
-            return window.EStoreConfig.images.placeholder;
+            const dotsHtml = product.images.map((_, imgIndex) => {
+                const isActive = imgIndex === 0 ? 'active' : '';
+                return `<span class="image-dot ${isActive}" data-image-index="${imgIndex}"></span>`;
+            }).join('');
+
+            return `
+                <div class="product-image-carousel" data-product-id="${product.id || index}">
+                    ${imagesHtml}
+                    <div class="image-dots">
+                        ${dotsHtml}
+                    </div>
+                </div>
+            `;
+        } else {
+            // Una sola imagen
+            return `<img src="${product.images[0]}"
+                         alt="${product.name || "Producto"}"
+                         loading="lazy"
+                         data-product-id="${product.id || index}">`;
         }
     }
+
 
     /**
      * Configura event listeners para imágenes
@@ -347,6 +373,62 @@ class EStore {
             console.error(`❌ Error cargando imagen - Producto ${index + 1}:`, img.src);
             img.src = window.EStoreConfig.images.placeholder;
             img.classList.add('error');
+        });
+    }
+
+    /**
+     * Configura el carrusel de imágenes para un producto
+     * @param {HTMLElement} carousel - Elemento del carrusel
+     * @param {Object} product - Objeto producto
+     */
+    setupImageCarousel(carousel, product) {
+        const images = carousel.querySelectorAll('.product-image-item');
+        const dots = carousel.querySelectorAll('.image-dot');
+        let currentIndex = 0;
+
+        // Función para mostrar imagen específica
+        const showImage = (index) => {
+            // Ocultar todas las imágenes
+            images.forEach(img => img.classList.remove('active'));
+            dots.forEach(dot => dot.classList.remove('active'));
+
+            // Mostrar imagen seleccionada
+            images[index].classList.add('active');
+            dots[index].classList.add('active');
+            currentIndex = index;
+        };
+
+        // Event listeners para los puntos
+        dots.forEach((dot, index) => {
+            dot.addEventListener('click', () => showImage(index));
+        });
+
+        // Event listener para hacer clic en la imagen para cambiar
+        carousel.addEventListener('click', (e) => {
+            // Solo cambiar si no se hizo clic en un punto
+            if (!e.target.classList.contains('image-dot')) {
+                const nextIndex = (currentIndex + 1) % images.length;
+                showImage(nextIndex);
+            }
+        });
+
+        // Auto-rotación cada 3 segundos
+        let autoRotateInterval = setInterval(() => {
+            const nextIndex = (currentIndex + 1) % images.length;
+            showImage(nextIndex);
+        }, 3000);
+
+        // Pausar auto-rotación al hover
+        carousel.addEventListener('mouseenter', () => {
+            clearInterval(autoRotateInterval);
+        });
+
+        // Reanudar auto-rotación al salir del hover
+        carousel.addEventListener('mouseleave', () => {
+            autoRotateInterval = setInterval(() => {
+                const nextIndex = (currentIndex + 1) % images.length;
+                showImage(nextIndex);
+            }, 3000);
         });
     }
 

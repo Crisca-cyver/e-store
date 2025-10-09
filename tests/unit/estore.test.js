@@ -37,8 +37,8 @@ describe('EStore', () => {
         window.GoogleSheetsUtils = class {
             loadProductsFromPublicSheet() {
                 return Promise.resolve([
-                    { id: 1, name: 'Producto 1', price: 100, description: 'Descripción 1' },
-                    { id: 2, name: 'Producto 2', price: 200, description: 'Descripción 2' }
+                    { id: 1, name: 'Producto 1', price: 100, description: 'Descripción 1', images: ['image1.jpg'] },
+                    { id: 2, name: 'Producto 2', price: 200, description: 'Descripción 2', images: ['image2.jpg'] }
                 ]);
             }
         };
@@ -77,9 +77,9 @@ describe('EStore', () => {
         beforeEach(() => {
             // Configurar productos de prueba
             estore.products = [
-                { id: 1, name: 'Producto Uno', price: 100, description: 'Descripción uno' },
-                { id: 2, name: 'Producto Dos', price: 200, description: 'Descripción dos' },
-                { id: 3, name: 'Otro Producto', price: 300, description: 'Otra descripción' }
+                { id: 1, name: 'Producto Uno', price: 100, description: 'Descripción uno', images: ['image1.jpg'] },
+                { id: 2, name: 'Producto Dos', price: 200, description: 'Descripción dos', images: ['image2.jpg'] },
+                { id: 3, name: 'Otro Producto', price: 300, description: 'Otra descripción', images: ['image3.jpg'] }
             ];
         });
 
