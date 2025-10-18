@@ -192,18 +192,21 @@ const GoogleSheetsUtils = (function() {
             'image2': 'image2',
             'imagen3': 'image3',
             'image3': 'image3',
-
-            'categoria': 'category',
-            'category': 'category',
-            'cat': 'category',
-
-            'stock': 'stock',
-            'cantidad': 'stock',
-            'inventory': 'stock',
-
-            'id': 'id',
-            'codigo': 'id',
-            'sku': 'id'
+            // Nuevos alias para imágenes extra
+            'imagen4': 'image4',
+            'image4': 'image4',
+            'imagen5': 'image5',
+            'image5': 'image5',
+            'imagen6': 'image6',
+            'image6': 'image6',
+            'imagen7': 'image7',
+            'image7': 'image7',
+            'imagen8': 'image8',
+            'image8': 'image8',
+            'imagen9': 'image9',
+            'image9': 'image9',
+            'imagen10': 'image10',
+            'image10': 'image10'
         };
 
         return headerMappings[header] || header;
@@ -283,11 +286,11 @@ const GoogleSheetsUtils = (function() {
      */
     createProductFromRow(row, headers, index) {
         const product = {
-            id: index + 1, // ID por defecto
+            id: index + 1,
             name: '',
             description: '',
             price: 0,
-            images: [], // Array de imágenes
+            images: [],
             category: '',
             stock: null
         };
@@ -303,19 +306,22 @@ const GoogleSheetsUtils = (function() {
         });
 
         // Procesar imágenes (image, image1, image2, image3)
-        const imageFields = ['image', 'image1', 'image2', 'image3'];
+        // Aceptar hasta 10 columnas de imagen
+        const imageFields = [
+            'image','image1','image2','image3','image4','image5','image6','image7','image8','image9','image10'
+        ];
         imageFields.forEach(field => {
             if (product[field]) {
                 const processedUrl = this.convertGoogleDriveUrl(product[field]);
                 if (processedUrl && !processedUrl.includes('placeholder')) {
                     product.images.push(processedUrl);
                 }
-                delete product[field]; // Remover el campo individual
+                delete product[field];
             }
         });
 
-        // Si no hay imágenes procesadas, agregar placeholder
-        if (product.images.length === 0) {
+        // Si no hay imágenes y NO hay carpeta, usar placeholder
+        if (product.images.length === 0 && !product.imagesFolder) {
             product.images.push(this.placeholderImage);
         }
 
@@ -513,6 +519,25 @@ const GoogleSheetsUtils = (function() {
 
         return null;
     }
+
+    extractFolderId(url) {
+        if (!url || typeof url !== 'string') return null;
+        const patterns = [
+            /\/folders\/([a-zA-Z0-9_-]+)/,     // https://drive.google.com/drive/folders/<ID>
+            /[\?&]id=([a-zA-Z0-9_-]+)/,        // ?id=<ID>
+            /\/d\/([a-zA-Z0-9_-]+)/            // fallback: /d/<ID>
+        ];
+        for (const re of patterns) {
+            const m = url.match(re);
+            if (m && m[1]) return m[1];
+        }
+        return null;
+    }
+
+    buildEmbeddedFolderViewUrl(folderId) {
+        if (!folderId) return this.placeholderImage;
+        return `https://drive.google.com/embeddedfolderview?id=${folderId}#grid`;
+    }
 }
 
 // Retornar la clase del módulo
@@ -528,7 +553,10 @@ window.googleSheetsUtils = {
     fixImageUrl: (url) => window.GoogleSheetsUtils.fixImageUrl(url),
     convertGoogleDriveUrl: (url) => window.GoogleSheetsUtils.convertGoogleDriveUrl(url),
     convertCsvToProducts: (csv) => window.GoogleSheetsUtils.convertCsvToProducts(csv),
-    loadProductsFromPublicSheet: (sheetId, gid) => window.GoogleSheetsUtils.loadProductsFromPublicSheet(sheetId, gid)
+    loadProductsFromPublicSheet: (sheetId, gid) => window.GoogleSheetsUtils.loadProductsFromPublicSheet(sheetId, gid),
+    // Nuevos helpers expuestos
+    extractFolderId: (url) => window.GoogleSheetsUtils.extractFolderId(url),
+    buildEmbeddedFolderViewUrl: (id) => window.GoogleSheetsUtils.buildEmbeddedFolderViewUrl(id)
 };
 
 console.log('✅ Google Sheets Utilities cargadas correctamente');

@@ -275,6 +275,7 @@ class EStore {
     /**
      * Crea una tarjeta de producto
      */
+    // Dentro de la clase EStore
     createProductCard(product, index) {
         console.log(`🏷️ Creando tarjeta para producto ${index + 1}:`, product.name);
 
@@ -285,6 +286,14 @@ class EStore {
         // Crear contenedor de imágenes
         const imagesHtml = this.createProductImagesHtml(product, index);
 
+        const stockValue = typeof product.stock === 'number' ? product.stock : null;
+        const isOut = stockValue !== null && stockValue <= 0;
+        const stockHtml = stockValue === null
+            ? ''
+            : isOut
+                ? `<div class="product-stock out">Agotado</div>`
+                : `<div class="product-stock in">Stock: ${stockValue}</div>`;
+
         card.innerHTML = `
             <div class="product-image">
                 ${imagesHtml}
@@ -292,10 +301,12 @@ class EStore {
             <div class="product-info">
                 <div class="product-name">${product.name || "Producto sin nombre"}</div>
                 <div class="product-description">${product.description || "Sin descripción"}</div>
-                <div class="product-price">${this.formatPrice(product.price)}</div>
-                ${product.stock ? `<div class="product-stock">Stock: ${product.stock}</div>` : ''}
+                <div class="product-price">$${this.formatPrice(product.price)}</div>
+                ${stockHtml}
             </div>
         `;
+
+        card.classList.toggle('out-of-stock', isOut);
 
         // Agregar event listeners a las imágenes
         const imgs = card.querySelectorAll('img');
@@ -316,6 +327,22 @@ class EStore {
      * Crea el HTML para las imágenes del producto
      */
     createProductImagesHtml(product, index) {
+        // Si hay link de carpeta: embeber el viewer de Drive
+        if (product.imagesFolder) {
+            const folderId = window.GoogleSheetsUtils.extractFolderId(product.imagesFolder) || product.imagesFolder;
+            const embedUrl = window.GoogleSheetsUtils.buildEmbeddedFolderViewUrl(folderId);
+
+            return `
+                <iframe
+                    class="product-images-iframe"
+                    src="${embedUrl}"
+                    loading="lazy"
+                    referrerpolicy="no-referrer"
+                    style="width:100%;height:240px;border:0;">
+                </iframe>
+            `;
+        }
+
         if (!product.images || product.images.length === 0) {
             return `<img src="${window.EStoreConfig.images.placeholder}"
                          alt="${product.name || "Producto"}"
@@ -323,7 +350,7 @@ class EStore {
                          data-product-id="${product.id || index}">`;
         }
 
-        // Si hay múltiples imágenes, mostrar la primera y crear un carrusel
+        // Si hay múltiples imágenes (URLs directas), armar carrusel propio
         if (product.images.length > 1) {
             const imagesHtml = product.images.map((imageUrl, imgIndex) => {
                 const isActive = imgIndex === 0 ? 'active' : '';
@@ -366,7 +393,13 @@ class EStore {
     setupImageEventListeners(img, index) {
         img.addEventListener('load', () => {
             console.log(`✅ Imagen cargada - Producto ${index + 1}:`, img.src);
-            img.classList.add('loaded');
+            // Si es ítem del carrusel, no forzar 'loaded' en todas:
+            if (!img.classList.contains('product-image-item')) {
+                img.classList.add('loaded');
+            } else if (img.classList.contains('active')) {
+                // Solo el activo puede tener loaded para el fade-in
+                img.classList.add('loaded');
+            }
         });
 
         img.addEventListener('error', () => {
@@ -386,39 +419,38 @@ class EStore {
         const dots = carousel.querySelectorAll('.image-dot');
         let currentIndex = 0;
 
-        // Función para mostrar imagen específica
         const showImage = (index) => {
-            // Ocultar todas las imágenes
-            images.forEach(img => img.classList.remove('active'));
+            // Ocultar todas y limpiar loaded
+            images.forEach(img => {
+                img.classList.remove('active');
+                img.classList.remove('loaded');
+            });
             dots.forEach(dot => dot.classList.remove('active'));
 
-            // Mostrar imagen seleccionada
-            images[index].classList.add('active');
+            // Mostrar la seleccionada y marcar loaded
+            const target = images[index];
+            target.classList.add('active');
+            target.classList.add('loaded');
             dots[index].classList.add('active');
             currentIndex = index;
         };
 
-        // Event listeners para los puntos
         dots.forEach((dot, index) => {
             dot.addEventListener('click', () => showImage(index));
         });
 
-        // Event listener para hacer clic en la imagen para cambiar
         carousel.addEventListener('click', (e) => {
-            // Solo cambiar si no se hizo clic en un punto
             if (!e.target.classList.contains('image-dot')) {
                 const nextIndex = (currentIndex + 1) % images.length;
                 showImage(nextIndex);
             }
         });
 
-        // Auto-rotación cada 3 segundos
         let autoRotateInterval = setInterval(() => {
             const nextIndex = (currentIndex + 1) % images.length;
             showImage(nextIndex);
         }, 3000);
 
-        // Pausar auto-rotación al hover
         carousel.addEventListener('mouseenter', () => {
             clearInterval(autoRotateInterval);
         });

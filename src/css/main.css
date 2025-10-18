@@ -12,8 +12,7 @@
   --primary-color: #37a431;
   --secondary-color: #3498db;
   --accent-color: #e74c3c;
-  --success-color: #27ae60;
-  --warning-color: #f39c12;
+  --success-color: #2ecc71;
   --danger-color: #e74c3c;
   
   /* Colores de fondo */
@@ -251,7 +250,7 @@ body {
 .product-image {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 260px; /* o 300px */
   overflow: hidden;
   background-color: var(--bg-light);
 }
@@ -301,6 +300,15 @@ body {
   pointer-events: auto;
 }
 
+/* Dar prioridad a las reglas del carrusel sobre img.loaded genérico */
+.product-image .product-image-item.loaded {
+  opacity: 0;
+}
+.product-image .product-image-item.active.loaded {
+  opacity: 1;
+}
+
+/* Dots del carrusel */
 .image-dots {
   position: absolute;
   bottom: var(--spacing-sm);
@@ -700,4 +708,29 @@ input:focus {
 
 .theme-toggle:hover {
   background: rgba(255, 255, 255, 0.1);
+}
+
+/* Indicador de stock */
+.product-stock {
+    margin-top: var(--space-2);
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-radius: var(--radius-sm);
+    padding: 6px 8px;
+    display: inline-block;
+}
+.product-stock.in {
+    color: var(--success-color);
+    background: rgba(46, 204, 113, 0.1);
+    border: 1px solid rgba(46, 204, 113, 0.25);
+}
+.product-stock.out {
+    color: var(--danger-color);
+    background: rgba(231, 76, 60, 0.08);
+    border: 1px solid rgba(231, 76, 60, 0.25);
+}
+
+/* Efecto visual cuando no hay stock */
+.product-card.out-of-stock {
+    opacity: 0.85;
 }
