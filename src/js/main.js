@@ -38,6 +38,7 @@ class EStore {
         console.log('🚀 Inicializando E-Store...');
         this.setupEventListeners();
         this.setupThemeToggle();
+        this.setupMobileMenu();
         this.updateCurrentYear();
         this.loadProducts();
     }
@@ -77,6 +78,52 @@ class EStore {
         });
 
         console.log('✅ Theme toggle configurado');
+    }
+
+    /**
+     * Configura el menú hamburguesa para móviles
+     */
+    setupMobileMenu() {
+        const hamburger = document.getElementById('hamburger');
+        const navMenu = document.getElementById('nav-menu');
+
+        if (!hamburger || !navMenu) {
+            console.warn('⚠️ Elementos del menú hamburguesa no encontrados');
+            return;
+        }
+
+        // Función para alternar el menú
+        const toggleMenu = () => {
+            hamburger.classList.toggle('active');
+            navMenu.classList.toggle('active');
+
+            // Prevenir scroll del body cuando el menú está abierto
+            document.body.style.overflow = navMenu.classList.contains('active') ? 'hidden' : '';
+        };
+
+        // Event listener para el botón hamburguesa
+        hamburger.addEventListener('click', toggleMenu);
+
+        // Cerrar menú al hacer click en un enlace
+        const navLinks = navMenu.querySelectorAll('a');
+        navLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            });
+        });
+
+        // Cerrar menú al hacer click fuera
+        document.addEventListener('click', (event) => {
+            if (!hamburger.contains(event.target) && !navMenu.contains(event.target)) {
+                hamburger.classList.remove('active');
+                navMenu.classList.remove('active');
+                document.body.style.overflow = '';
+            }
+        });
+
+        console.log('✅ Menú hamburguesa configurado');
     }
 
     /**
