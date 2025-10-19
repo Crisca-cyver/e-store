@@ -124,7 +124,7 @@ body {
 .header {
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: var(--text-white);
-  padding: var(--spacing-lg) 0;
+  padding: var(--spacing-md) 0;
   box-shadow: var(--shadow-md);
   position: sticky;
   top: 0;
@@ -545,7 +545,6 @@ body {
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
   .header-content {
-    flex-direction: column;
     text-align: center;
   }
 
