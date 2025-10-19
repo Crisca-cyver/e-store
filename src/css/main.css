@@ -124,7 +124,7 @@ body {
 .header {
   background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: var(--text-white);
-  padding: var(--spacing-md) 0;
+  padding: var(--spacing-md);
   box-shadow: var(--shadow-md);
   position: sticky;
   top: 0;
@@ -194,6 +194,7 @@ body {
   text-align: center;
   margin-bottom: var(--spacing-xl);
   color: var(--primary-color);
+  text-transform: uppercase;
 }
 
 .page-subtitle {
