@@ -4,11 +4,9 @@
   "description": "Tienda online que utiliza Google Sheets como base de datos",
   "main": "index.html",
   "scripts": {
-    "start": "npx serve",
-    "dev": "npx live-server",
-    "test": "npx live-server --port=3001 tests/test-runner.html",
-    "test:unit": "echo \"Ejecuta tests en el navegador: npm test\"",
-    "lint": "echo \"No hay linter configurado\""
+    "dev": "vite",
+    "dev:css": "tailwindcss -i ./src/css/tailwind.css -o ./src/css/tw.css --watch",
+    "build:css": "tailwindcss -i ./src/css/tailwind.css -o ./src/css/tw.css --minify"
   },
   "keywords": [
     "ecommerce",
@@ -21,8 +19,12 @@
   "author": "Tu Nombre",
   "license": "MIT",
   "devDependencies": {
-    "live-server": "^1.2.2",
-    "serve": "^14.2.0"
+    "autoprefixer": "^10.4.21",
+    "http-server": "^14.1.1",
+    "postcss": "^8.5.6",
+    "serve": "^14.2.0",
+    "tailwindcss": "^4.1.14",
+    "vite": "^7.1.10"
   },
   "repository": {
     "type": "git",

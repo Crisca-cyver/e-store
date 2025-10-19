@@ -348,7 +348,7 @@ class EStore {
             <div class="product-info">
                 <div class="product-name">${product.name || "Producto sin nombre"}</div>
                 <div class="product-description">${product.description || "Sin descripción"}</div>
-                <div class="product-price">$${this.formatPrice(product.price)}</div>
+                <div class="product-price">${this.formatPrice(product.price)}</div>
                 ${stockHtml}
             </div>
         `;

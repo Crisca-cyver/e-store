@@ -13,6 +13,7 @@
     <link rel="icon" href="assets/images/logo.svg" type="image/svg+xml" />
 
     <!-- Estilos CSS -->
+    <link rel="stylesheet" href="src/css/tw.css" />
     <link rel="stylesheet" href="src/css/main.css" />
 
     <!-- Font Awesome -->
@@ -61,8 +62,16 @@
     <!-- Contenido Principal -->
     <main class="main-content">
       <div class="container">
-        <h1 class="page-title">Catálogo de Productos</h1>
-        <p class="page-subtitle">Explora nuestra selección de productos</p>
+        <h1
+          class="page-title uppercase text-center font-bold text-green-600 text-2xl sm:text-3xl lg:text-4xl"
+        >
+          Catálogo de Productos
+        </h1>
+        <p
+          class="page-subtitle text-center text-gray-400 text-base sm:text-lg max-w-2xl mx-auto mt-2"
+        >
+          Explora nuestra selección de productos
+        </p>
 
         <!-- Sección de Productos -->
         <section class="products-section">
@@ -73,16 +82,19 @@
 
             <div class="filters">
               <input
-                type="text"
                 id="search-input"
+                class="w-full sm:w-80 px-3 py-2 rounded border border-gray-700 bg-gray-900 text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+                type="text"
                 placeholder="Buscar productos..."
-                class="search-input"
               />
             </div>
           </div>
 
           <!-- Contenedor de Productos -->
-          <div class="products-grid" id="products-container">
+          <div
+            id="products-container"
+            class="products-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
             <!-- Los productos se cargarán dinámicamente aquí -->
             <div class="loading-message">
               <i class="fas fa-spinner fa-spin"></i>
@@ -94,38 +106,98 @@
     </main>
 
     <!-- Footer -->
-    <footer class="footer">
-      <div class="container">
-        <div class="footer-content">
-          <div class="footer-section">
-            <h3>Acerca de</h3>
-            <ul>
-              <li><a href="#">Nuestra Historia</a></li>
-              <li><a href="#">Equipo</a></li>
-              <li><a href="#">Misión y Visión</a></li>
+    <footer
+      class="footer bg-gray-900 text-gray-200 mt-10 border-t border-gray-800"
+    >
+      <div class="container mx-auto px-4 py-10">
+        <div
+          class="footer-content grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
+          <div class="footer-section space-y-3">
+            <h3 class="text-lg font-semibold text-white">Acerca de</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-green-500 transition"
+                  >Nuestra Historia</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-green-500 transition"
+                  >Equipo</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-green-500 transition"
+                  >Misión y Visión</a
+                >
+              </li>
             </ul>
           </div>
 
-          <div class="footer-section">
-            <h3>Ayuda</h3>
-            <ul>
-              <li><a href="#">Preguntas Frecuentes</a></li>
-              <li><a href="#">Envíos y Devoluciones</a></li>
-              <li><a href="#">Métodos de Pago</a></li>
+          <div class="footer-section space-y-3">
+            <h3 class="text-lg font-semibold text-white">Ayuda</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-green-500 transition"
+                  >Preguntas Frecuentes</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-green-500 transition"
+                  >Envíos y Devoluciones</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-green-500 transition"
+                  >Métodos de Pago</a
+                >
+              </li>
             </ul>
           </div>
 
-          <div class="footer-section">
-            <h3>Legal</h3>
-            <ul>
-              <li><a href="#">Términos y Condiciones</a></li>
-              <li><a href="#">Política de Privacidad</a></li>
-              <li><a href="#">Términos de Servicio</a></li>
+          <div class="footer-section space-y-3">
+            <h3 class="text-lg font-semibold text-white">Legal</h3>
+            <ul class="space-y-2">
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-green-500 transition"
+                  >Términos y Condiciones</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-green-500 transition"
+                  >Política de Privacidad</a
+                >
+              </li>
+              <li>
+                <a
+                  href="#"
+                  class="text-gray-400 hover:text-green-500 transition"
+                  >Términos de Servicio</a
+                >
+              </li>
             </ul>
           </div>
         </div>
 
-        <div class="footer-bottom">
+        <div
+          class="footer-bottom mt-10 pt-6 border-t border-gray-800 text-center text-sm text-gray-500"
+        >
           <p>
             &copy; <span id="current-year"></span> E-Store. Todos los derechos
             reservados.
@@ -140,11 +212,11 @@
     <!-- AQUÍ debes reemplazar TUNUMERO con tu número de WhatsApp -->
     <a
       href="https://wa.me/+5493518027879"
-      class="floating-whatsapp-btn"
+      class="floating-whatsapp-btn fixed bottom-6 right-6 w-14 h-14 bg-green-600 hover:bg-green-700 text-white rounded-full shadow-lg flex items-center justify-center z-50"
       title="Contactar por WhatsApp"
       target="_blank"
     >
-      <i class="fab fa-whatsapp"></i>
+      <i class="fab fa-whatsapp text-2xl"></i>
     </a>
 
     <!-- Scripts -->
@@ -153,3 +225,19 @@
     <script src="src/js/main.js"></script>
   </body>
 </html>
+
+<nav class="container mx-auto px-4 py-10">
+  <ul
+    class="nav flex items-center gap-3 text-sm sm:text-base justify-center mx-auto"
+    id="nav-menu"
+  >
+    <li><a href="#" class="active">Inicio</a></li>
+    <li><a href="#">Productos</a></li>
+    <li><a href="#">Categorías</a></li>
+    <li><a href="#">Contacto</a></li>
+  </ul>
+</nav>
+
+<div
+  class="product-card rounded-lg shadow-md bg-gray-900 border border-gray-800 hover:shadow-xl transition"
+></div>
