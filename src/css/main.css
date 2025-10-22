@@ -187,9 +187,6 @@ body {
 }
 
 .page-title {
-  font-size: var(--font-size-xxxl);
-  font-weight: bold;
-  text-align: center;
   margin-top: var(--spacing-md);
   margin-bottom: var(--spacing-xl);
   color: var(--primary-color);
